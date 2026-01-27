@@ -19,8 +19,8 @@ local function GetStellarAsset(fileName, url)
 end
 
 -- Persiapan Asset Logo
-local LogoStellar = GetStellarAsset("StellarLogo.jpg", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Stellar%20System.jpg")
-local LogoDiscord = GetStellarAsset("DiscordLogo.jpg", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Discord.jpg")
+local LogoStellar = GetStellarAsset("StellarLogo.jpg", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Stellar%20System.png.jpg")
+local LogoDiscord = GetStellarAsset("DiscordLogo.jpg", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Discord.png")
 
 -- Membersihkan UI lama
 if CoreGui:FindFirstChild("StellarFinal") then 
