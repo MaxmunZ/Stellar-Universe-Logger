@@ -41,31 +41,3 @@ TabFish:AddToggle({
 })
 
 OrionLib:Init()
--- [[ TAB FISHING ]]
-local TabFish = Window:MakeTab({Name = "Fishing", Icon = "rbxassetid://4483345998"})
-TabFish:AddToggle({
-    Name = "Auto Fishing",
-    Default = false,
-    Callback = function(Value)
-        if Value then
-            FishLogic:StartAutoFarm()
-        else
-            FishLogic:StopAutoFarm()
-        end
-    end    
-})
-
-OrionLib:Init()
-            FishLogic:StopAutoFarm()
-        end
-	end    
-})
-
-OrionLib:Init()
-	Callback = function()
-        -- Fungsi kirim tes ke discord
-        print("Testing to: " .. _G.FishWebhook)
-  	end    
-})
-
-OrionLib:Init()
