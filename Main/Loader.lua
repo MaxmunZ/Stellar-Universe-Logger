@@ -1,28 +1,22 @@
--- [[ STELLAR SYSTEM LOADER ]]
+-- [[ STELLAR SYSTEM LOADER - ANTI ERROR ]]
 repeat task.wait() until game:IsLoaded()
 
--- Gunakan tanda kutip ["nomor"] agar ID panjang tidak error
+-- Pastikan link ini mengarah ke file FishIt.lua kamu yang isinya Kavo tadi
+local fishItURL = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua"
+
+-- Daftar ID Game (Gunakan string agar angka besar tidak error)
 local games = {
-    ["121864768012064"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua",
-    ["16140080763"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua",
+    ["121864768012064"] = fishItURL,
+    ["16140080763"] = fishItURL,
 }
 
--- Ubah ID game yang sedang dimainkan jadi teks juga supaya cocok
 local currentId = tostring(game.PlaceId)
-local scriptURL = games[currentId]
 
-if scriptURL then
-    print("Stellar System: Game Ditemukan (" .. currentId .. ")! Memuat Script...")
-    -- Memanggil script dari GitHub kamu
-    local success, err = pcall(function()
-        loadstring(game:HttpGet(scriptURL .. "?t=" .. os.time()))()
-    end)
-    
-    if not success then
-        warn("Stellar System: Gagal memuat file game! Error: " .. err)
-    end
+if games[currentId] then
+    print("Stellar: Game terdaftar, memuat...")
+    loadstring(game:HttpGet(games[currentId] .. "?t=" .. os.time()))()
 else
-    print("Stellar System: Game ID " .. currentId .. " Belum Didukung.")
-    -- JALUR DARURAT: Jika ID tidak cocok, tetap coba panggil FishIt.lua buat ngetes
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua"))()
+    print("Stellar: ID " .. currentId .. " tidak terdaftar, tapi tetap memuat FishIt...")
+    -- JALUR DARURAT: Tetap panggil script supaya menu muncul
+    loadstring(game:HttpGet(fishItURL .. "?t=" .. os.time()))()
 end
