@@ -251,10 +251,8 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
 end
 
 -- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
-local function SendFishNotification(name, rarity, price, zone, mutation, weight, user)
-    -- CEK TOGGLE: Jika OFF, jangan kirim apapun
-    if _G.WebhookEnabled ~= true then return end
-
+local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
+    if not _G.WebhookEnabled then return end
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
@@ -262,17 +260,16 @@ local function SendFishNotification(name, rarity, price, zone, mutation, weight,
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
     if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
 
-    -- Warna Embed Berdasarkan Rarity
-    local embedColor = 16777215 -- White
-    if rarity:find("Legendary") then embedColor = 16761095 -- Gold
-    elseif rarity:find("Mythic") then embedColor = 11342935 -- Purple
-    elseif rarity:find("Secret") then embedColor = 16711820 -- Pink
+    local embedColor = 16777215
+    if rarity == "Legendary" then embedColor = 16761095
+    elseif rarity == "Mythic" then embedColor = 11342935
+    elseif rarity == "Secret" then embedColor = 16711820 
     end
 
     local data = {
         ["content"] = DiscordID.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
-            ["title"] = "⭐ Stellar System | Catch Log",
+            ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
             ["color"] = embedColor,
             ["fields"] = {
                 {["name"] = "👤 Player", ["value"] = "```" .. user .. "```", ["inline"] = true},
@@ -300,30 +297,35 @@ end
 
 -- [[ 7. UNIVERSAL GAME DETECTOR (REMOTE SPY MODE) ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = game:GetService("Players").LocalPlayer
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local function ProcessFish(data)
+local function HandleFishData(data)
     if type(data) ~= "table" then return end
-    
-    -- Mengambil data asli dari struktur game Fish It
+
+    -- Mengambil data spesifik dari table game
     local name = data.Name or data.FishName or "Unknown"
     local rarity = data.Rarity or data.Tier or "Common"
     local price = data.Price or data.Value or data.SellValue or "0"
-    local weight = data.Weight or data.Lbs or (data.Amount and tostring(data.Amount).." lbs") or "N/A"
-    local mutation = data.Mutation or data.Variant or "Clean"
-    local zone = data.Zone or data.Location or "Ocean"
+    local weight = data.Weight or data.Lbs or "N/A"
+    local mutation = data.Mutation or data.Variant or "None"
+    local zone = data.Zone or data.Location or "Unknown Zone"
     
-    SendFishNotification(name, rarity, price, zone, mutation, weight, LocalPlayer.Name)
+    -- Mengambil Username pembawa keberuntungan
+    local username = LocalPlayer.Name
+
+    -- Kirim ke fungsi Webhook yang sudah di-upgrade
+    SendFishNotification(name, rarity, price, zone, "", mutation, weight, username)
 end
 
--- Listener untuk menangkap event pancing
+-- Listener otomatis untuk RemoteEvent game
 for _, v in pairs(ReplicatedStorage:GetDescendants()) do
-    if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
+    if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                if type(arg) == "table" and (arg.Name or arg.Rarity) then
-                    ProcessFish(arg)
+                if type(arg) == "table" and (arg.Name or arg.FishName) then
+                    HandleFishData(arg)
                 end
             end
         end)
