@@ -115,7 +115,44 @@ SecGhostfin:NewToggle("Auto Ghostfin", "Otomatis menyelesaikan quest Ghostfin", 
     print("Ghostfin Quest:", state)
 end)
 
+-- [[ TAB QUEST - UPDATE NAME ]]
+local Tab5 = Window:NewTab("Quest")
+local SecArtifact = Tab5:NewSection("Artifact Lever Location")
+local SecGhostfin = Tab5:NewSection("Ghostfin Quest") -- Sesuai permintaan
+local SecElement = Tab5:NewSection("Element Quest")
+local SecDiamond = Tab5:NewSection("Diamond Quest") -- Sesuai permintaan
+local SecCrystalline = Tab5:NewSection("Crystalline Passage Features")
+
+-- [[ TAB TELEPORT - BERDASARKAN REFERENSI ]]
+local Tab6 = Window:NewTab("Teleport")
+local SecTelePlayer = Tab6:NewSection("Teleport To Player") --
+local SecLocation = Tab6:NewSection("Location") --
+
+-- Contoh Fitur Teleport
+SecTelePlayer:NewDropdown("Select Player", "Pilih pemain untuk teleport", {}, function(selected)
+    print("Teleporting to: " .. selected)
+end)
+
+-- [[ TAB WEBHOOK - STELLAR SYSTEM EXCLUSIVE ]]
+local Tab7 = Window:NewTab("Webhook")
+
+-- Struktur Section
+local SecWebFish = Tab7:NewSection("Webhook Fish Caught")
+local SecWebStat = Tab7:NewSection("Webhook Statistic Player")
+local SecWebConn = Tab7:NewSection("Webhook Player Connection")
+
+-- Contoh Fitur Webhook (Bisa dikembangkan nanti)
+SecWebFish:NewTextBox("Webhook URL", "Tempelkan URL Webhook Discord di sini", function(txt)
+    _G.WebhookURL = txt
+    print("Webhook set to: " .. txt)
+end)
+
+SecWebFish:NewToggle("Send Fish Logs", "Kirim data ikan yang didapat ke Discord", function(state)
+    print("Fish Logs:", state)
+end)
 
 
--- Sidebar Tabs (Struktur Mandiri Stellar System)
-local Tab6 = Window:NewTab("Menu")
+-- [[ SISA TAB SIDEBAR UNTUK MELENGKAPI TAMPILAN ]]
+local Tab8 = Window:NewTab("Misc") --
+local Tab9 = Window:NewTab("Config") --
+local Tab10 = Window:NewTab("Menu") --
