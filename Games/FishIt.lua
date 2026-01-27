@@ -299,31 +299,38 @@ local function SendFishNotification(fishName, fishTier, fishPrice, fishZone, fis
     end)
 end
 
--- [[ 7. GAME EVENT DETECTOR - SAFE MODE ]]
+-- [[ 7. UNIVERSAL GAME DETECTOR (REMOTE SPY MODE) ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
 
-if Remotes then
-    -- Mencoba beberapa kemungkinan nama RemoteEvent di game Fish It
-    local CatchEvent = Remotes:FindFirstChild("FishCaught") or Remotes:FindFirstChild("CatchFish") or Remotes:FindFirstChild("CompleteMinigame")
-    
-    if CatchEvent then
-        CatchEvent.OnClientEvent:Connect(function(data1, data2)
-            -- Beberapa game mengirim data langsung, beberapa mengirim dalam Table
-            local fishData = (type(data1) == "table") and data1 or (type(data2) == "table" and data2) or {}
-            
-            local name = fishData.Name or fishData.FishName or data1 or "Unknown"
-            local tier = fishData.Tier or fishData.Rarity or data2 or "Common"
-            local price = fishData.Price or fishData.Value or "0"
-            local zone = fishData.Zone or "Main Ocean"
-            
-            local imageId = fishData.Image or fishData.Icon or ""
-            local imageUrl = "https://www.roblox.com/asset-thumbnail/image?assetId=" .. tostring(imageId):gsub("%D", "") .. "&width=420&height=420&format=png"
+-- Fungsi untuk membongkar data apa pun yang dikirim game
+local function HandleIncomingData(...)
+    local args = {...}
+    local name, tier, price = "Unknown", "Common", "0"
 
-            -- Print di Console (F9) untuk memantau jika ada ikan masuk
-            print("Stellar Catch: " .. name .. " | " .. tier)
-            
-            SendFishNotification(name, tier, price, zone, imageUrl)
+    -- Mencari data di dalam arguments yang dikirim game
+    for _, v in pairs(args) do
+        if type(v) == "table" then
+            name = v.Name or v.FishName or name
+            tier = v.Tier or v.Rarity or tier
+            price = v.Price or v.Value or price
+        elseif type(v) == "string" and #v > 3 then
+            name = v
+        end
+    end
+
+    print("⭐ STELLAR SPY: Terdeteksi ikan [" .. name .. "] dengan Tier [" .. tier .. "]")
+    SendFishNotification(name, tier, tostring(price), "Dynamic Zone", "")
+end
+
+-- Mencari semua RemoteEvent di ReplicatedStorage secara otomatis
+for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+    if v:IsA("RemoteEvent") then
+        v.OnClientEvent:Connect(function(...)
+            -- Kita hanya memproses jika nama remotenya berhubungan dengan 'Fish', 'Catch', atau 'Reward'
+            local n = v.Name:lower()
+            if n:find("fish") or n:find("catch") or n:find("reward") or n:find("complete") then
+                HandleIncomingData(...)
+            end
         end)
     end
 end
