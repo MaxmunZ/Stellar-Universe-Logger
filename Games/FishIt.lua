@@ -298,26 +298,33 @@ local function SendFishNotification(name, rarity, price, zone, mutation, weight,
     end)
 end
 
--- [[ 7. UNIVERSAL GAME DETECTOR ]]
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- [[ 7. UNIVERSAL GAME DETECTOR UNIVERSAL SNIFFER DETECTOR ]]
 local LP = game:GetService("Players").LocalPlayer
 
--- Deteksi semua RemoteEvent yang mengirim data ikan
-for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+-- Fungsi untuk membongkar tabel data dari game
+local function HandleData(data)
+    if type(data) ~= "table" then return end
+    if not (data.Name or data.Rarity or data.Tier) then return end
+
+    local n = data.Name or data.FishName or "Unknown"
+    local r = data.Rarity or data.Tier or "Common"
+    local p = data.Price or data.Value or data.SellValue or "0"
+    local w = data.Weight or data.Lbs or (data.Amount and tostring(data.Amount).." lbs") or "N/A"
+    local m = data.Mutation or data.Variant or "None"
+    local z = data.Zone or data.Location or "Main Ocean"
+    
+    -- Panggil pengirim (Bagian 6)
+    SendFishNotification(n, r, p, z, m, w, LP.Name)
+end
+
+-- Memantau SEMUA RemoteEvent di dalam game tanpa kecuali
+for _, v in pairs(game:GetDescendants()) do
     if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                -- Mencari tabel yang mengandung info ikan
-                if type(arg) == "table" and (arg.Name or arg.Rarity or arg.Tier) then
-                    local n = arg.Name or arg.FishName or "Unknown"
-                    local r = arg.Rarity or arg.Tier or "Common"
-                    local p = arg.Price or arg.Value or arg.Worth or "0"
-                    local w = arg.Weight or arg.Lbs or (arg.Amount and tostring(arg.Amount).." lbs") or "N/A"
-                    local m = arg.Mutation or arg.Variant or "None"
-                    local z = arg.Zone or arg.Area or "Main Ocean"
-                    
-                    SendFishNotification(n, r, p, z, m, w, LP.Name)
+                if type(arg) == "table" then
+                    HandleData(arg)
                 end
             end
         end)
