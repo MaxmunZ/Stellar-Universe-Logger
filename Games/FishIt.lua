@@ -251,22 +251,21 @@ end
 
 -- [[ 6. UPGRADED FISHING LOGIC ]]
 local function SendFishNotification(name, rarity, price, zone, mutation, weight, user)
-    if _G.WebhookEnabled ~= true then return end -- Pastikan ini terpanggil
+    -- CEK APAKAH TOGGLE MENYALA
+    if _G.WebhookEnabled ~= true then return end
 
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Filter Rarity yang lebih akurat
+    -- FILTER TIER
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter ~= "Select Options" then
-        if not string.find(currentFilter:lower(), rarity:lower()) then
-            return 
-        end
+    if currentFilter ~= "Select Options" and not currentFilter:lower():find(rarity:lower()) then 
+        return 
     end
 
-    local embedColor = 16777215 
-    if rarity:find("Legendary") then embedColor = 16761095 
-    elseif rarity:find("Mythic") then embedColor = 11342935 
+    local embedColor = 16777215
+    if rarity:find("Legendary") then embedColor = 16761095
+    elseif rarity:find("Mythic") then embedColor = 11342935
     elseif rarity:find("Secret") then embedColor = 16711820 
     end
 
@@ -299,25 +298,26 @@ local function SendFishNotification(name, rarity, price, zone, mutation, weight,
     end)
 end
 
--- [[ 7. UNIVERSAL DEEP SCAN DETECTOR ]]
+-- [[ 7. UNIVERSAL GAME DETECTOR ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LP = game:GetService("Players").LocalPlayer
 
+-- Deteksi semua RemoteEvent yang mengirim data ikan
 for _, v in pairs(ReplicatedStorage:GetDescendants()) do
     if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                -- Mencari tabel yang punya ciri-ciri data ikan
+                -- Mencari tabel yang mengandung info ikan
                 if type(arg) == "table" and (arg.Name or arg.Rarity or arg.Tier) then
-                    local name = arg.Name or arg.FishName or "Unknown"
-                    local rarity = arg.Rarity or arg.Tier or "Common"
-                    local price = arg.Price or arg.Value or arg.SellValue or "0"
-                    local weight = arg.Weight or arg.Lbs or (arg.Amount and tostring(arg.Amount).." lbs") or "N/A"
-                    local mutation = arg.Mutation or arg.Variant or "None"
-                    local zone = arg.Zone or arg.Location or "Ocean"
+                    local n = arg.Name or arg.FishName or "Unknown"
+                    local r = arg.Rarity or arg.Tier or "Common"
+                    local p = arg.Price or arg.Value or arg.Worth or "0"
+                    local w = arg.Weight or arg.Lbs or (arg.Amount and tostring(arg.Amount).." lbs") or "N/A"
+                    local m = arg.Mutation or arg.Variant or "None"
+                    local z = arg.Zone or arg.Area or "Main Ocean"
                     
-                    SendFishNotification(name, rarity, price, zone, mutation, weight, LP.Name)
+                    SendFishNotification(n, r, p, z, m, w, LP.Name)
                 end
             end
         end)
