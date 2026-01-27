@@ -258,7 +258,7 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     
     -- Filter Tier
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter == "Select Options" then return end
+    if currentFilter ~= "Select Options" and not currentFilter:lower():find(rarity:lower()) then return end
 
     local embedColor = 16777215
     if rarity == "Legendary" then embedColor = 16761095
