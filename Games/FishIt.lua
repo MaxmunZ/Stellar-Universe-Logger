@@ -38,7 +38,7 @@ local TitleLogo = Instance.new("ImageLabel", Header)
 TitleLogo.Name = "TitleLogo"
 TitleLogo.Size = UDim2.fromOffset(20, 20)
 TitleLogo.Position = UDim2.new(0, 12, 0.5, -10)
-TitleLogo.Image = "rbxassetid://1000304092" -- ID Logo dari visualmu
+TitleLogo.Image = "rbxassetid://133361483813672"  -- ID Logo dari visualmu
 TitleLogo.BackgroundTransparency = 1
 TitleLogo.ScaleType = Enum.ScaleType.Fit
 
@@ -148,7 +148,7 @@ DiscordCorner.CornerRadius = UDim.new(0, 4)
 local DiscordIcon = Instance.new("ImageLabel", DiscordBox)
 DiscordIcon.Size = UDim2.fromOffset(30, 30)
 DiscordIcon.Position = UDim2.new(0, 12, 0.5, -15)
-DiscordIcon.Image = "rbxassetid://12643110214" -- Ikon Discord standar
+DiscordIcon.Image = "rbxassetid://100344740949293" -- Ikon Discord standar
 DiscordIcon.BackgroundTransparency = 1
 
 local DiscordText = Instance.new("TextLabel", DiscordBox)
