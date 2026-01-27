@@ -202,7 +202,10 @@ local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.ne
 
 -- [[ FIX: PENGGUNAAN REQUEST UNTUK EXECUTOR ]]
 TestBtn.MouseButton1Click:Connect(function()
-    local url = WebhookURL.Text:gsub("%s+", "")
+-- [[ FIX: PENGGUNAAN REQUEST UNTUK EXECUTOR ]]
+TestBtn.MouseButton1Click:Connect(function()
+    -- Menggunakan nama variabel Box yang baru
+    local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then
         TestBtn.Text = "Invalid Webhook URL!"
         task.wait(2)
@@ -211,7 +214,7 @@ TestBtn.MouseButton1Click:Connect(function()
     end
 
     local payload = HttpService:JSONEncode({
-        ["content"] = DiscordID.Text ~= "" and "Notification for <@"..DiscordID.Text..">" or "Stellar System Test",
+        ["content"] = DiscordIDBox.Text ~= "" and "Notification for <@"..DiscordIDBox.Text..">" or "Stellar System Test",
         ["embeds"] = {{
             ["title"] = "Connection Test",
             ["description"] = "Webhook is connected!",
