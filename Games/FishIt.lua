@@ -1,10 +1,15 @@
 -- [[ STELLAR SYSTEM FINAL UI - REVISED VERSION ]]
 -- Developer: Luc Aetheryn
--- Fix: Webhook Test Functionality for Executors
+-- Fix: Webhook Toggle & Data Detection Accuracy
 
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Inisialisasi awal variabel global agar tidak nil
+_G.WebhookEnabled = false 
 
 -- [[ GITHUB ASSET HANDLER ]]
 local function GetStellarAsset(fileName, url)
@@ -33,7 +38,7 @@ Instance.new("UICorner", SearchMenu)
 
 local SList = Instance.new("ScrollingFrame", SearchMenu); SList.Size = UDim2.new(1, 0, 1, -10); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0
 Instance.new("UIListLayout", SList)
-local SelectedTiers = {} -- Tempat menyimpan pilihan yang dipilih
+local SelectedTiers = {} 
 
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
@@ -46,18 +51,15 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
     
     b.MouseButton1Click:Connect(function()
         if table.find(SelectedTiers, t) then
-            -- Jika sudah ada, hapus dari daftar (Deselect)
             for i, v in ipairs(SelectedTiers) do
                 if v == t then table.remove(SelectedTiers, i) end
             end
-            b.TextColor3 = Color3.fromRGB(200, 200, 200) -- Warna normal
+            b.TextColor3 = Color3.fromRGB(200, 200, 200)
         else
-            -- Jika belum ada, tambahkan ke daftar (Select)
             table.insert(SelectedTiers, t)
-            b.TextColor3 = Color3.fromRGB(255, 50, 150) -- Warna pink (aktif)
+            b.TextColor3 = Color3.fromRGB(255, 50, 150)
         end
         
-        -- Update teks tombol di Webhook Page agar menampilkan pilihan
         if _G.TierBtn then
             if #SelectedTiers == 0 then
                 _G.TierBtn.Text = "Select Options"
@@ -68,7 +70,6 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
     end)
 end
 
--- Tambahkan tombol "Close" di bawah list agar user bisa menutup menu setelah memilih
 local CloseSearch = Instance.new("TextButton", SearchMenu)
 CloseSearch.Size = UDim2.new(1, 0, 0, 25)
 CloseSearch.Position = UDim2.new(0, 0, 1, 0)
@@ -164,7 +165,6 @@ local function AddWhFilter(lbl, y, search)
     B.TextColor3 = Color3.fromRGB(200, 200, 200)
     Instance.new("UICorner", B)
     
-    -- JIKA INI ADALAH TIER FILTER, SIMPAN REFERENSINYA
     if lbl == "Tier Filter" then
         _G.TierBtn = B
     end
@@ -187,12 +187,11 @@ local function AddWhToggle(lbl, y)
     local T = Instance.new("Frame", BG); T.Size = UDim2.fromOffset(18, 18); T.Position = UDim2.new(0, 2, 0.5, -9); T.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", T).CornerRadius = UDim.new(1, 0)
     
     BG.MouseButton1Click:Connect(function() 
-        local s = BG.BackgroundColor3 == Color3.fromRGB(45, 45, 55)
+        local s = not _G.WebhookEnabled -- Balikkan nilai saat ini
+        _G.WebhookEnabled = s
+        
         BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55)
         TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
-        
-        -- SIMPAN STATUS TOGEL
-        if lbl == "Send Fish Webhook" then _G.WebhookEnabled = s end
     end)
 end
 
@@ -200,7 +199,6 @@ AddWhToggle("Send Fish Webhook", 310)
 
 local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
 
--- [[ FIX: PENGGUNAAN REQUEST UNTUK EXECUTOR ]]
 TestBtn.MouseButton1Click:Connect(function()
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then
@@ -250,9 +248,9 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
+-- [[ 6. UPGRADED FISHING LOGIC ]]
 local function SendFishNotification(name, rarity, price, zone, mutation, weight, user)
-    -- CEK TOGGLE: Jika OFF, jangan kirim apapun
+    -- CEK TOGGLE
     if _G.WebhookEnabled ~= true then return end
 
     local url = WebhookURL.Text:gsub("%s+", "")
@@ -262,11 +260,10 @@ local function SendFishNotification(name, rarity, price, zone, mutation, weight,
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
     if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
 
-    -- Warna Embed Berdasarkan Rarity
-    local embedColor = 16777215 -- White
-    if rarity:find("Legendary") then embedColor = 16761095 -- Gold
-    elseif rarity:find("Mythic") then embedColor = 11342935 -- Purple
-    elseif rarity:find("Secret") then embedColor = 16711820 -- Pink
+    local embedColor = 16777215 
+    if rarity:find("Legendary") then embedColor = 16761095 
+    elseif rarity:find("Mythic") then embedColor = 11342935 
+    elseif rarity:find("Secret") then embedColor = 16711820 
     end
 
     local data = {
@@ -298,14 +295,13 @@ local function SendFishNotification(name, rarity, price, zone, mutation, weight,
     end)
 end
 
--- [[ 7. UNIVERSAL GAME DETECTOR (REMOTE SPY MODE) ]]
+-- [[ 7. UNIVERSAL DEEP SCAN DETECTOR ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = game:GetService("Players").LocalPlayer
 
 local function ProcessFish(data)
     if type(data) ~= "table" then return end
     
-    -- Mengambil data asli dari struktur game Fish It
+    -- Pemetaan data spesifik Fish It
     local name = data.Name or data.FishName or "Unknown"
     local rarity = data.Rarity or data.Tier or "Common"
     local price = data.Price or data.Value or data.SellValue or "0"
@@ -316,13 +312,14 @@ local function ProcessFish(data)
     SendFishNotification(name, rarity, price, zone, mutation, weight, LocalPlayer.Name)
 end
 
--- Listener untuk menangkap event pancing
+-- Listener untuk RemoteEvent
 for _, v in pairs(ReplicatedStorage:GetDescendants()) do
-    if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
+    if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                if type(arg) == "table" and (arg.Name or arg.Rarity) then
+                -- Hanya proses jika tabel tersebut terlihat seperti data ikan
+                if type(arg) == "table" and (arg.Name or arg.Rarity or arg.FishName) then
                     ProcessFish(arg)
                 end
             end
