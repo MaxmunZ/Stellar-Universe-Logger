@@ -2,13 +2,18 @@
 repeat task.wait() until game:IsLoaded()
 
 local games = {
-    [6701277882] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua",
+    -- Masukkan ID Fish It yang baru kamu dapatkan
+    [121864768012064] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua",
+    -- Kamu bisa tambah ID game lain di sini
+    [16140080763] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua", -- Contoh ID Fisch
 }
 
 local scriptURL = games[game.PlaceId]
 
 if scriptURL then
-    loadstring(game:HttpGet(scriptURL))()
+    print("Stellar System: Game Ditemukan! Memuat Script...")
+    loadstring(game:HttpGet(scriptURL .. "?t=" .. os.time()))()
 else
-    warn("Stellar System: Game ID " .. game.PlaceId .. " belum didukung.")
+    print("Stellar System: Game ID " .. game.PlaceId .. " Belum Didukung.")
+    -- Opsional: Memuat menu universal jika game tidak terdaftar
 end
