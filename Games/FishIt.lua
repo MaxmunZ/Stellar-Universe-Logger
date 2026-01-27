@@ -1,6 +1,6 @@
 -- [[ STELLAR SYSTEM FINAL UI - REVISED VERSION ]]
 -- Developer: Luc Aetheryn
--- Fix: Integrated Webhook, Functional Toggle, Search Menu & Discord Test
+-- Fix: Webhook Test Functionality for Executors
 
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
@@ -90,7 +90,7 @@ local DSub = Instance.new("TextLabel", DBox); DSub.Text = "Official Link Discord
 local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.new(0.05, 0, 0.82, 0); CopyBtn.Size = UDim2.new(0.9, 0, 0, 32); CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); CopyBtn.Text = "Copy Link Discord"; CopyBtn.Font = Enum.Font.Gotham; CopyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", CopyBtn)
 CopyBtn.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/QEhHc6UBHH"); CopyBtn.Text = "Copied!"; task.wait(2); CopyBtn.Text = "Copy Link Discord" end)
 
--- [[ WEBHOOK PAGE - REVISED INPUTS ]]
+-- [[ WEBHOOK PAGE ]]
 local WebhookPage = CreatePage("Webhook", true)
 local WhTitle = Instance.new("TextLabel", WebhookPage); WhTitle.Text = "Webhook Settings"; WhTitle.Size = UDim2.new(1, 0, 0, 40); WhTitle.Font = Enum.Font.GothamBold; WhTitle.TextSize = 20; WhTitle.TextColor3 = Color3.new(1,1,1); WhTitle.BackgroundTransparency = 1
 
@@ -123,54 +123,44 @@ local function AddWhToggle(lbl, y)
 end
 AddWhToggle("Send Fish Webhook", 310)
 
+local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
+
+-- [[ FIX: PENGGUNAAN REQUEST UNTUK EXECUTOR ]]
 TestBtn.MouseButton1Click:Connect(function()
-    local url = WebhookURL.Text:gsub("%s+", "") -- Membersihkan spasi tak sengaja
-    
-    -- 1. Validasi URL
-    if url == "" or not url:find("discord.com/api/webhooks") then
+    local url = WebhookURL.Text:gsub("%s+", "")
+    if url == "" or not url:find("discord") then
         TestBtn.Text = "Invalid Webhook URL!"
-        TestBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
         task.wait(2)
         TestBtn.Text = "Tests Webhook Connection"
-        TestBtn.TextColor3 = Color3.new(1,1,1)
         return
     end
 
-    -- 2. Data yang dikirim
-    local data = {
-        ["content"] = DiscordID.Text ~= "" and "Notification for <@" .. DiscordID.Text .. ">" or "Stellar System Test",
+    local payload = HttpService:JSONEncode({
+        ["content"] = DiscordID.Text ~= "" and "Notification for <@"..DiscordID.Text..">" or "Stellar System Test",
         ["embeds"] = {{
-            ["title"] = "✅ Connection Successful",
-            ["description"] = "Webhook Stellar System berhasil terhubung!",
+            ["title"] = "Connection Test",
+            ["description"] = "Webhook is connected!",
             ["color"] = 41727,
-            ["footer"] = {["text"] = "Stellar System | Luc Aetheryn"},
             ["image"] = {["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"}
         }}
-    }
+    })
 
-    -- 3. Gunakan fungsi request (Standar Executor Delta/Fluxus/dll)
     local success, response = pcall(function()
         return (request or http_request or syn.request)({
             Url = url,
             Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
-            Body = HttpService:JSONEncode(data)
+            Body = payload
         })
     end)
 
-    if success and (response.StatusCode == 204 or response.StatusCode == 200) then
+    if success then
         TestBtn.Text = "Successfully Sent!"
-        TestBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
     else
-        -- Jika masih gagal, tampilkan error di Console (F9)
-        TestBtn.Text = "Failed! Check F9"
-        TestBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
-        warn("Stellar Error: " .. tostring(response and response.StatusCode or "No Response"))
+        TestBtn.Text = "Failed To Send"
     end
-
     task.wait(2)
     TestBtn.Text = "Tests Webhook Connection"
-    TestBtn.TextColor3 = Color3.new(1,1,1)
 end)
 
 -- [[ 5. TAB SYSTEM ]]
