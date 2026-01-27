@@ -202,8 +202,6 @@ local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.ne
 
 -- [[ FIX: PENGGUNAAN REQUEST UNTUK EXECUTOR ]]
 TestBtn.MouseButton1Click:Connect(function()
--- [[ FIX: PENGGUNAAN REQUEST UNTUK EXECUTOR ]]
-TestBtn.MouseButton1Click:Connect(function()
     -- Menggunakan nama variabel Box yang baru
     local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then
