@@ -235,7 +235,7 @@ TestBtn.MouseButton1Click:Connect(function()
         TestBtn.Text = "Failed To Send"
     end
     task.wait(2)
-    TestBtn.Text = "Tests Webhook Connection"
+    TestBtn.Text = "Test Webhook Connection"
 end)
 
 -- [[ 5. TAB SYSTEM ]]
@@ -295,41 +295,69 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. UNIVERSAL GAME DETECTOR (REMOTE SPY MODE) ]]
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local function HandleFishData(data)
-    if type(data) ~= "table" then return end
-
-    -- Mengambil data spesifik dari table game
-    local name = data.Name or data.FishName or "Unknown"
-    local rarity = data.Rarity or data.Tier or "Common"
-    local price = data.Price or data.Value or data.SellValue or "0"
-    local weight = data.Weight or data.Lbs or "N/A"
-    local mutation = data.Mutation or data.Variant or "None"
-    local zone = data.Zone or data.Location or "Unknown Zone"
+-- [[ 7. UNIVERSAL DETECTOR - DEEP SCAN MODE ]]
+local function ForceScan(tab)
+    if type(tab) ~= "table" then return nil end
     
-    -- Mengambil Username pembawa keberuntungan
-    local username = LocalPlayer.Name
+    -- Mencari kunci data yang umum digunakan di game fishing
+    local n = tab.Name or tab.FishName or tab.fish_name or tab.Id
+    local r = tab.Rarity or tab.Tier or tab.rarity_type or tab.Rank
+    local p = tab.Price or tab.Value or tab.SellValue or tab.price
+    local w = tab.Weight or tab.Lbs or tab.weight
+    local m = tab.Mutation or tab.Variant or tab.is_shiny
+    local z = tab.Zone or tab.Location or "Dynamic Zone"
 
-    -- Kirim ke fungsi Webhook yang sudah di-upgrade
-    SendFishNotification(name, rarity, price, zone, "", mutation, weight, username)
+    -- Jika minimal ada Nama atau Rarity, kirim!
+    if n or r then
+        return {
+            Name = tostring(n or "Unknown"),
+            Rarity = tostring(r or "Common"),
+            Price = tostring(p or "0"),
+            Weight = tostring(w or "N/A"),
+            Mutation = tostring(m or "None"),
+            Zone = tostring(z)
+        }
+    end
+    return nil
 end
 
--- Listener otomatis untuk RemoteEvent game
-for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+-- Listener Utama
+for _, v in pairs(game:GetDescendants()) do
     if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                if type(arg) == "table" and (arg.Name or arg.FishName) then
-                    HandleFishData(arg)
+                if type(arg) == "table" then
+                    -- Cek tabel utama
+                    local found = ForceScan(arg)
+                    
+                    -- Jika tidak ketemu di utama, bongkar isinya satu-satu (Deep Scan)
+                    if not found then
+                        for _, sub in pairs(arg) do
+                            if type(sub) == "table" then
+                                found = ForceScan(sub)
+                                if found then break end
+                            end
+                        end
+                    end
+                    
+                    if found then
+                        SendFishNotification(
+                            found.Name, 
+                            found.Rarity, 
+                            found.Price, 
+                            found.Zone, 
+                            "", 
+                            found.Mutation, 
+                            found.Weight, 
+                            game.Players.LocalPlayer.Name
+                        )
+                    end
                 end
             end
         end)
     end
 end
+
 
 ShowPage("Info")
