@@ -1,40 +1,46 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
--- MENGATUR UKURAN LEBIH KECIL (Mirip Chloe X)
+-- [[ PENGATURAN JENDELA UTAMA ]]
 local Window = Fluent:CreateWindow({
-    Title = "STELLAR SYSTEM",
+    Title = "STELLAR SYSTEM | Fish It",
     SubTitle = "by Luc Aetheryn",
-    TabWidth = 140, -- Lebih ramping
-    Size = UDim2.fromOffset(450, 320), -- Ukuran dikecilkan dari 580x460
+    TabWidth = 140, 
+    Size = UDim2.fromOffset(450, 320), 
     Acrylic = true, 
     Theme = "Amethyst",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- [[ SISTEM FLOATING LOGO MINIMIZE ]]
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-local ImageButton = Instance.new("ImageButton", ScreenGui)
+-- [[ SISTEM FLOATING LOGO (FIXED MAXIMIZE) ]]
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local MiniButton = Instance.new("ImageButton", ScreenGui)
 
-ImageButton.Size = UDim2.new(0, 50, 0, 50)
-ImageButton.Position = UDim2.new(0, 10, 0.5, 0)
-ImageButton.Image = "rbxassetid://1000304092" -- Logo Stellar
-ImageButton.Visible = false -- Sembunyi saat menu buka
-ImageButton.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
-local Corner = Instance.new("UICorner", ImageButton)
-Corner.CornerRadius = UDim.new(1, 0) -- Bulat sempurna
+MiniButton.Name = "StellarMinimize"
+MiniButton.Size = UDim2.new(0, 50, 0, 50)
+MiniButton.Position = UDim2.new(0, 10, 0.5, -25)
+MiniButton.Image = "rbxassetid://1000304092" -- Logo Stellar Kamu
+MiniButton.Visible = false
+MiniButton.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+MiniButton.Draggable = true 
 
--- Fungsi Klik Logo untuk Munculkan Menu
-ImageButton.MouseButton1Click:Connect(function()
-    Window:Minimize() -- Memanggil fungsi bawaan Fluent
-    ImageButton.Visible = false
+local Corner = Instance.new("UICorner", MiniButton)
+Corner.CornerRadius = UDim.new(1, 0)
+
+-- FUNGSI UNTUK MEMBUKA KEMBALI (MAXIMIZE)
+MiniButton.MouseButton1Click:Connect(function()
+    -- Memaksa UI Fluent untuk muncul kembali
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+    -- Jika executor kamu tidak mendukung VirtualInput, kita gunakan toggle visible:
+    if Fluent.Unloaded then return end
+    MiniButton.Visible = false
 end)
 
--- Fungsi menyambungkan Tombol Minimize bawaan Fluent ke Logo kita
--- Kita buat toggle manual agar Logo muncul saat menu hilang
-Window.OnMinimize:Connect(function()
-    ImageButton.Visible = true
+-- MENDETEKSI SAAT MENU DIMINIMIZE
+Window.OnMinimize:Connect(function(Minimized)
+    MiniButton.Visible = Minimized
 end)
 
+-- [[ SETUP TABS ]]
 local Tabs = {
     Info = Window:AddTab({ Title = "Info", Icon = "info" }),
     Fishing = Window:AddTab({ Title = "Fishing", Icon = "fish" }),
@@ -47,54 +53,46 @@ local Tabs = {
     Config = Window:AddTab({ Title = "Config", Icon = "save" })
 }
 
--- [[ 1. INFO ]]
-Tabs.Info:AddParagraph({ Title = "Owner", Content = "Luc Aetheryn" })
-Tabs.Info:AddParagraph({ Title = "Status", Content = "ONLINE - Stable" })
+-- [[ 1. TAB INFO & DISCORD ]]
+Tabs.Info:AddParagraph({ Title = "Developer", Content = "Luc Aetheryn" })
 Tabs.Info:AddButton({
     Title = "Copy Discord Link",
-    Callback = function() setclipboard("https://discord.gg/QEhHc6UBHH") end
+    Callback = function() 
+        setclipboard("https://discord.gg/QEhHc6UBHH")
+        Fluent:Notify({ Title = "Stellar", Content = "Discord Link Copied!", Duration = 3 })
+    end
 })
 
--- [[ 2. FISHING (Lengkap Sesuai Gambar) ]]
+-- [[ 2. TAB FISHING ]]
 Tabs.Fishing:AddSection("Fishing Support")
 Tabs.Fishing:AddSection("Fishing Features")
 Tabs.Fishing:AddSection("Instant Features")
-Tabs.Fishing:AddSection("Blatant v1 Features")
-Tabs.Fishing:AddSection("Blatant v2 Features")
-Tabs.Fishing:AddSection("Selling Features")
-Tabs.Fishing:AddSection("Favorite Features")
-Tabs.Fishing:AddSection("Auto Rejoin Features")
 
--- [[ 3. AUTOMATICALLY (Lengkap Sesuai Gambar) ]]
-Tabs.Auto:AddSection("Shop Features")
-Tabs.Auto:AddSection("Save Position Features")
-Tabs.Auto:AddSection("Enchant Features")
-Tabs.Auto:AddSection("Totem Features")
-Tabs.Auto:AddSection("Potions Features")
-Tabs.Auto:AddSection("Event Features")
+-- [[ 3. TAB AUTOMATICALLY ]]
+Tabs.Auto:AddSection("Shop & Save Position")
+Tabs.Auto:AddSection("Enchant & Totem")
 
--- [[ 4. TRADING (Lengkap Sesuai Gambar) ]]
-Tabs.Trading:AddSection("Trading Fish Features")
-Tabs.Trading:AddSection("Trading Enchant Stones Features")
-Tabs.Trading:AddSection("Trading Coin Features")
-Tabs.Trading:AddSection("Trading Fish By Rarity")
-Tabs.Trading:AddSection("Auto Accept Features")
+-- [[ 4. TAB TRADING ]]
+Tabs.Trading:AddSection("Trading System")
 
--- [[ 5. QUEST (Lengkap Sesuai Gambar) ]]
-Tabs.Quest:AddSection("Artifact Lever Location")
-Tabs.Quest:AddButton({Title = "Ghostfin Quest", Callback = function() end})
-Tabs.Quest:AddSection("Element Quest")
-Tabs.Quest:AddButton({Title = "Diamond Quest", Callback = function() end})
-Tabs.Quest:AddSection("Crystalline Passage Features")
+-- [[ 5. TAB QUEST ]]
+Tabs.Quest:AddSection("Artifact & Event")
+Tabs.Quest:AddButton({
+    Title = "Ghostfin Quest",
+    Callback = function() end
+})
+Tabs.Quest:AddButton({
+    Title = "Diamond Quest",
+    Callback = function() end
+})
 
--- [[ 6. TELEPORT (Lengkap Sesuai Gambar) ]]
-Tabs.Teleport:AddSection("Teleport To Player")
-Tabs.Teleport:AddSection("Location")
+-- [[ 6. TAB TELEPORT ]]
+Tabs.Teleport:AddSection("World Teleport")
 
--- [[ 7. WEBHOOK, MISC, CONFIG ]]
-Tabs.Webhook:AddSection("Webhook Settings")
-Tabs.Misc:AddSection("Misc Features")
-Tabs.Config:AddSection("Configuration")
+-- [[ 7. LAIN-LAIN ]]
+Tabs.Webhook:AddSection("Notification")
+Tabs.Misc:AddSection("Misc")
+Tabs.Config:AddSection("Settings")
 
 Window:SelectTab(1)
-Fluent:Notify({ Title = "STELLAR SYSTEM", Content = "All Sections Loaded!", Duration = 5 })
+Fluent:Notify({ Title = "STELLAR", Content = "Maximize Fixed! Click Logo to Open.", Duration = 4 })
