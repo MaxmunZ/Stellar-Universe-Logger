@@ -1,14 +1,39 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
+-- MENGATUR UKURAN LEBIH KECIL (Mirip Chloe X)
 local Window = Fluent:CreateWindow({
-    Title = "STELLAR SYSTEM | Fish It",
+    Title = "STELLAR SYSTEM",
     SubTitle = "by Luc Aetheryn",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
+    TabWidth = 140, -- Lebih ramping
+    Size = UDim2.fromOffset(450, 320), -- Ukuran dikecilkan dari 580x460
     Acrylic = true, 
     Theme = "Amethyst",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
+
+-- [[ SISTEM FLOATING LOGO MINIMIZE ]]
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local ImageButton = Instance.new("ImageButton", ScreenGui)
+
+ImageButton.Size = UDim2.new(0, 50, 0, 50)
+ImageButton.Position = UDim2.new(0, 10, 0.5, 0)
+ImageButton.Image = "rbxassetid://1000304092" -- Logo Stellar
+ImageButton.Visible = false -- Sembunyi saat menu buka
+ImageButton.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+local Corner = Instance.new("UICorner", ImageButton)
+Corner.CornerRadius = UDim.new(1, 0) -- Bulat sempurna
+
+-- Fungsi Klik Logo untuk Munculkan Menu
+ImageButton.MouseButton1Click:Connect(function()
+    Window:Minimize() -- Memanggil fungsi bawaan Fluent
+    ImageButton.Visible = false
+end)
+
+-- Fungsi menyambungkan Tombol Minimize bawaan Fluent ke Logo kita
+-- Kita buat toggle manual agar Logo muncul saat menu hilang
+Window.OnMinimize:Connect(function()
+    ImageButton.Visible = true
+end)
 
 local Tabs = {
     Info = Window:AddTab({ Title = "Info", Icon = "info" }),
