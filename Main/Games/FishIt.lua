@@ -1,27 +1,43 @@
--- [[ STELLAR UNIVERSE - AUTO FARM LOGIC ]]
-local FishLogic = {}
+-- [[ STELLAR UNIVERSE - OFFICIAL FISH LOGIC ]]
+local FishIt = {}
 
--- Fungsi Utama Memancing
-function FishLogic:StartAutoFarm()
-    _G.AutoFishing = true
-    spawn(function()
-        while _G.AutoFishing do
+function FishIt:StartAutoFarm()
+    _G.StellarAutoFarm = true
+    OrionLib:MakeNotification({Name = "Stellar System", Content = "Auto Farm diaktifkan!", Time = 2})
+    
+    task.spawn(function()
+        while _G.StellarAutoFarm do
             task.wait(1)
-            -- Di sini nanti diisi dengan RemoteEvent pancingan game
-            print("Stellar System: Menunggu Ikan...")
-            
-            -- Contoh logika pemicu jika berhasil dapat ikan:
-            -- local fishData = "Shark"
-            -- local tier = "Legendary"
-            -- SendLog(fishData, tier, "50kg", "5000") 
+            -- Di sini staff @Arcane akan memasukkan RemoteEvent untuk pancing otomatis
+            print("Stellar System: Scanning for fish...")
         end
     end)
 end
 
--- Fungsi Berhenti
-function FishLogic:StopAutoFarm()
-    _G.AutoFishing = false
-    print("Stellar System: Pancing Berhenti.")
+function FishIt:SendLog(fish, tier, weight, price)
+    -- Mengambil webhook dari variabel global yang diisi di GUI (seperti Chloe X)
+    local webhookURL = _G.FishWebhook 
+    
+    if webhookURL and webhookURL ~= "" then
+        local request = syn and syn.request or http_request or request
+        request({
+            Url = webhookURL,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = game:GetService("HttpService"):JSONEncode({
+                ["embeds"] = {{
+                    ["title"] = "🪐 STELLAR UNIVERSE LOGGER",
+                    ["color"] = 65535,
+                    ["fields"] = {
+                        {["name"] = "👤 Player", ["value"] = game.Players.LocalPlayer.Name, ["inline"] = true},
+                        {["name"] = "🐟 Fish", ["value"] = fish, ["inline"] = true},
+                        {["name"] = "💎 Tier", ["value"] = tier, ["inline"] = true},
+                        {["name"] = "⚖️ Weight", ["value"] = weight, ["inline"] = true}
+                    }
+                }}
+            })
+        })
+    end
 end
 
-return FishLogic
+return FishIt
