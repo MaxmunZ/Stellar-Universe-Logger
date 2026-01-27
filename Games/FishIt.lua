@@ -1,6 +1,6 @@
--- [[ STELLAR SYSTEM HUB - THE ABSOLUTE FINAL ]]
--- Developer: Luc Aetheryn
--- Restoration: Gradient, Discord, Logos, and Floating UI
+-- [[ STELLAR SYSTEM HUB - ABSOLUTE FINAL ]]
+-- Developer: Luc Aetheryn | Assets: GitHub RAW
+-- Features: Floating Button, Auto-Color Status, Restoration
 
 local CoreGui = game:GetService("CoreGui")
 if CoreGui:FindFirstChild("StellarFinal") then CoreGui.StellarFinal:Destroy() end
@@ -8,6 +8,10 @@ if CoreGui:FindFirstChild("StellarFinal") then CoreGui.StellarFinal:Destroy() en
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "StellarFinal"
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- [[ CONFIG ASSET - LINK RAW GITHUB ]]
+local MyLogo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.jpg"
+local MyDiscord = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Discord.jpg"
 
 -- [[ FLOATING BUTTON ]]
 local FloatingBtn = Instance.new("TextButton", ScreenGui)
@@ -22,7 +26,7 @@ Instance.new("UICorner", FloatingBtn).CornerRadius = UDim.new(0, 8)
 local FloatLogo = Instance.new("ImageLabel", FloatingBtn)
 FloatLogo.Size = UDim2.new(0.7, 0, 0.7, 0)
 FloatLogo.Position = UDim2.new(0.15, 0, 0.15, 0)
-FloatLogo.Image = "rbxassetid://133361483813672" -- Logo kamu
+FloatLogo.Image = MyLogo
 FloatLogo.BackgroundTransparency = 1
 
 -- [[ MAIN FRAME ]]
@@ -42,34 +46,36 @@ Header.BackgroundTransparency = 1
 local TitleLogo = Instance.new("ImageLabel", Header)
 TitleLogo.Size = UDim2.fromOffset(22, 22)
 TitleLogo.Position = UDim2.new(0, 12, 0.5, -11)
-TitleLogo.Image = "rbxassetid://133361483813672" -- Logo kamu
+TitleLogo.Image = MyLogo
 TitleLogo.BackgroundTransparency = 1
 
-local Title = Instance.new("TextLabel", Header)
-Title.Text = "Stellar System | Fish It"
-Title.Position = UDim2.new(0, 42, 0, 0)
-Title.Size = UDim2.new(1, -120, 1, 0)
-Title.Font = Enum.Font.GothamMedium
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.TextSize = 14
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.BackgroundTransparency = 1
+local TitleText = Instance.new("TextLabel", Header)
+TitleText.Text = "Stellar System | Fish It"
+TitleText.Position = UDim2.new(0, 42, 0, 0)
+TitleText.Size = UDim2.new(1, -120, 1, 0)
+TitleText.Font = Enum.Font.GothamMedium
+TitleText.TextColor3 = Color3.new(1, 1, 1)
+TitleText.TextSize = 14
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.BackgroundTransparency = 1
 
--- CLOSE & MINIMIZE BUTTONS
-local function CreateControl(txt, pos, color)
-    local B = Instance.new("TextButton", Header)
-    B.Text = txt
-    B.Size = UDim2.fromOffset(28, 28)
-    B.Position = pos
-    B.BackgroundColor3 = color
-    B.TextColor3 = Color3.new(1, 1, 1)
-    B.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", B).CornerRadius = UDim.new(0, 4)
-    return B
-end
+local Close = Instance.new("TextButton", Header)
+Close.Text = "X"
+Close.Size = UDim2.fromOffset(28, 28)
+Close.Position = UDim2.new(1, -35, 0.5, -14)
+Close.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+Close.TextColor3 = Color3.new(1, 1, 1)
+Close.Font = Enum.Font.GothamBold
+Instance.new("UICorner", Close).CornerRadius = UDim.new(0, 4)
 
-local Close = CreateControl("X", UDim2.new(1, -35, 0.5, -14), Color3.fromRGB(200, 50, 50))
-local Mini = CreateControl("—", UDim2.new(1, -68, 0.5, -14), Color3.fromRGB(45, 45, 55))
+local Mini = Instance.new("TextButton", Header)
+Mini.Text = "—"
+Mini.Size = UDim2.fromOffset(28, 28)
+Mini.Position = UDim2.new(1, -68, 0.5, -14)
+Mini.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+Mini.TextColor3 = Color3.new(1, 1, 1)
+Mini.Font = Enum.Font.GothamBold
+Instance.new("UICorner", Mini).CornerRadius = UDim.new(0, 4)
 
 -- [[ SIDEBAR ]]
 local Sidebar = Instance.new("Frame", Main)
@@ -79,7 +85,8 @@ Sidebar.BackgroundTransparency = 1
 local List = Instance.new("UIListLayout", Sidebar)
 List.Padding = UDim.new(0, 6)
 
-for _, n in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webhook", "Config"}) do
+local tabs = {"Info", "Fishing", "Automatically", "Menu", "Quest", "Webhook", "Config"}
+for _, n in pairs(tabs) do
     local B = Instance.new("TextButton", Sidebar)
     B.Size = UDim2.new(1, 0, 0, 32)
     B.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
@@ -106,7 +113,7 @@ HubTitle.TextSize = 18
 HubTitle.TextColor3 = Color3.new(1, 1, 1)
 HubTitle.BackgroundTransparency = 1
 
--- INFO SECTION
+-- INFO SECTION (Revisi: Bold & No Colon)
 local InfoTitle = Instance.new("TextLabel", Content)
 InfoTitle.Text = "Info"
 InfoTitle.Position = UDim2.new(0.05, 0, 0.15, 0)
@@ -116,19 +123,21 @@ InfoTitle.TextColor3 = Color3.new(1, 1, 1)
 InfoTitle.TextXAlignment = Enum.TextXAlignment.Left
 InfoTitle.BackgroundTransparency = 1
 
-local function Row(l, v, y, g)
-    local F = Instance.new("Frame", Content)
-    F.Size = UDim2.new(0.9, 0, 0, 20)
-    F.Position = UDim2.new(0.05, 0, y, 0)
-    F.BackgroundTransparency = 1
-    local L = Instance.new("TextLabel", F)
+local function AddRow(l, v, y, g)
+    local Row = Instance.new("Frame", Content)
+    Row.Size = UDim2.new(0.9, 0, 0, 20)
+    Row.Position = UDim2.new(0.05, 0, y, 0)
+    Row.BackgroundTransparency = 1
+    
+    local L = Instance.new("TextLabel", Row)
     L.Text = l
     L.Size = UDim2.new(0, 80, 1, 0)
     L.Font = Enum.Font.Gotham
     L.TextColor3 = Color3.fromRGB(220, 220, 220)
     L.TextXAlignment = Enum.TextXAlignment.Left
     L.BackgroundTransparency = 1
-    local V = Instance.new("TextLabel", F)
+    
+    local V = Instance.new("TextLabel", Row)
     V.Text = ":  " .. v
     V.Position = UDim2.new(0, 80, 0, 0)
     V.Size = UDim2.new(1, -80, 1, 0)
@@ -138,12 +147,12 @@ local function Row(l, v, y, g)
     V.BackgroundTransparency = 1
 end
 
-Row("Version", "V1.0.0 [BETA]", 0.22)
-Row("Owner", "Luc Aetheryn", 0.29)
-Row("Status", "Undetected", 0.36, true)
-Row("Last Update", "Tuesday, Jan 27, 2026", 0.43)
+AddRow("Version", "V1.0.0 [BETA]", 0.22)
+AddRow("Owner", "Luc Aetheryn", 0.29)
+AddRow("Status", "Undetected", 0.36, true) -- Status Hijau
+AddRow("Last Update", "Tuesday, Jan 27, 2026", 0.43)
 
--- THE MISSING GRADIENT LINE
+-- GRADIENT LINE
 local Line = Instance.new("Frame", Content)
 Line.Position = UDim2.new(0.05, 0, 0.54, 0)
 Line.Size = UDim2.new(0.9, 0, 0, 2)
@@ -151,7 +160,7 @@ Line.BorderSizePixel = 0
 local Grad = Instance.new("UIGradient", Line)
 Grad.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
 
--- THE MISSING DISCORD BOX
+-- DISCORD BOX
 local Dbox = Instance.new("Frame", Content)
 Dbox.Position = UDim2.new(0.05, 0, 0.6, 0)
 Dbox.Size = UDim2.new(0.9, 0, 0, 50)
@@ -161,7 +170,7 @@ Instance.new("UICorner", Dbox)
 local Dicon = Instance.new("ImageLabel", Dbox)
 Dicon.Size = UDim2.fromOffset(30, 30)
 Dicon.Position = UDim2.new(0, 10, 0.5, -15)
-Dicon.Image = "rbxassetid://13543168532"
+Dicon.Image = MyDiscord
 Dicon.BackgroundTransparency = 1
 
 local Dname = Instance.new("TextLabel", Dbox)
@@ -177,12 +186,12 @@ local Dsub = Instance.new("TextLabel", Dbox)
 Dsub.Text = "Official Link Discord Server"
 Dsub.Position = UDim2.new(0, 50, 0.5, 0)
 Dsub.Size = UDim2.new(1, -60, 0.4, 0)
-Dsub.Font = Enum.Font.Gotham
+Dsub.Font = Enum.Font.Gotham -- Not Bold
 Dsub.TextColor3 = Color3.fromRGB(200, 200, 200)
 Dsub.TextXAlignment = Enum.TextXAlignment.Left
 Dsub.BackgroundTransparency = 1
 
--- THE MISSING COPY BUTTON
+-- COPY BUTTON
 local Copy = Instance.new("TextButton", Content)
 Copy.Position = UDim2.new(0.05, 0, 0.82, 0)
 Copy.Size = UDim2.new(0.9, 0, 0, 30)
@@ -192,8 +201,13 @@ Copy.Font = Enum.Font.Gotham
 Copy.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Copy)
 
--- BUTTON LOGIC
+-- [[ LOGIC ]]
 Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 Mini.MouseButton1Click:Connect(function() Main.Visible = false FloatingBtn.Visible = true end)
 FloatingBtn.MouseButton1Click:Connect(function() Main.Visible = true FloatingBtn.Visible = false end)
-Copy.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/QEhHc6UBHH") Copy.Text = "Copied!" task.wait(2) Copy.Text = "Copy Link Discord" end)
+Copy.MouseButton1Click:Connect(function() 
+    setclipboard("https://discord.gg/QEhHc6UBHH") 
+    Copy.Text = "Copied!" 
+    task.wait(2) 
+    Copy.Text = "Copy Link Discord" 
+end)
