@@ -77,9 +77,27 @@ SecEnchant:NewToggle("Auto Enchant", "Otomatis melakukan enchant", function(stat
     print("Auto Enchant:", state)
 end)
 
+-- [[ TAB TRADING - STELLAR SYSTEM EXCLUSIVE ]]
+local Tab4 = Window:NewTab("Trading")
+
+-- Struktur Section 
+local SecTradeFish = Tab4:NewSection("Trading Fish Features")
+local SecTradeStone = Tab4:NewSection("Trading Enchant Stones Features")
+local SecTradeCoin = Tab4:NewSection("Trading Coin Features")
+local SecTradeRarity = Tab4:NewSection("Trading Fish By Rarity")
+local SecAutoAccept = Tab4:NewSection("Auto Accept Features")
+
+-- Contoh pengisian fitur (Bisa dikembangkan nanti)
+SecTradeFish:NewButton("Select Fish to Trade", "Pilih ikan untuk ditukar", function()
+    print("Selecting Fish...")
+end)
+
+SecAutoAccept:NewToggle("Auto Accept Trade", "Otomatis menerima permintaan trade", function(state)
+    print("Auto Accept:", state)
+end)
+
 
 
 -- Sidebar Tabs (Struktur Mandiri Stellar System)
-local Tab4 = Window:NewTab("Trading")
 local Tab5 = Window:NewTab("Quest")
 local Tab6 = Window:NewTab("Menu")
