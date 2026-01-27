@@ -123,21 +123,12 @@ local function AddWhToggle(lbl, y)
 end
 AddWhToggle("Send Fish Webhook", 310)
 
-local TestBtn = Instance.new("TextButton", WebhookPage)
-TestBtn.Size = UDim2.new(0.9, 0, 0, 35)
-TestBtn.Position = UDim2.new(0.05, 0, 0, 355)
-TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-TestBtn.Text = "Tests Webhook Connection"
-TestBtn.TextColor3 = Color3.new(1,1,1)
-TestBtn.Font = Enum.Font.Gotham
-Instance.new("UICorner", TestBtn)
-
 TestBtn.MouseButton1Click:Connect(function()
-    local rawUrl = WebhookURL.Text:gsub("%s+", "") -- Menghapus spasi yang tidak sengaja terketik
+    local url = WebhookURL.Text:gsub("%s+", "") -- Membersihkan spasi tak sengaja
     
-    -- Validasi apakah URL benar-benar link Discord
-    if rawUrl == "" or not rawUrl:find("discord") then
-        TestBtn.Text = "URL Kosong / Salah!"
+    -- 1. Validasi URL
+    if url == "" or not url:find("discord.com/api/webhooks") then
+        TestBtn.Text = "Invalid Webhook URL!"
         TestBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
         task.wait(2)
         TestBtn.Text = "Tests Webhook Connection"
@@ -145,35 +136,36 @@ TestBtn.MouseButton1Click:Connect(function()
         return
     end
 
+    -- 2. Data yang dikirim
     local data = {
         ["content"] = DiscordID.Text ~= "" and "Notification for <@" .. DiscordID.Text .. ">" or "Stellar System Test",
         ["embeds"] = {{
             ["title"] = "✅ Connection Successful",
             ["description"] = "Webhook Stellar System berhasil terhubung!",
             ["color"] = 41727,
+            ["footer"] = {["text"] = "Stellar System | Luc Aetheryn"},
             ["image"] = {["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"}
         }}
     }
 
-    -- Proses pengiriman
-    local success, err = pcall(function()
-        return request({ -- Menggunakan fungsi request (standar executor seperti Delta/Fluxus)
-            Url = rawUrl,
+    -- 3. Gunakan fungsi request (Standar Executor Delta/Fluxus/dll)
+    local success, response = pcall(function()
+        return (request or http_request or syn.request)({
+            Url = url,
             Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode(data)
         })
     end)
 
-    if success then
+    if success and (response.StatusCode == 204 or response.StatusCode == 200) then
         TestBtn.Text = "Successfully Sent!"
         TestBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
-        print("Stellar: Webhook terkirim!")
     else
-        -- Jika gagal, cek F9 (Console) untuk melihat pesan errornya
+        -- Jika masih gagal, tampilkan error di Console (F9)
         TestBtn.Text = "Failed! Check F9"
         TestBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
-        warn("Stellar Webhook Error: " .. tostring(err))
+        warn("Stellar Error: " .. tostring(response and response.StatusCode or "No Response"))
     end
 
     task.wait(2)
