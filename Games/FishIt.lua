@@ -34,8 +34,22 @@ Instance.new("UICorner", SearchMenu)
 local SList = Instance.new("ScrollingFrame", SearchMenu); SList.Size = UDim2.new(1, 0, 1, -10); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0
 Instance.new("UIListLayout", SList)
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
-    local b = Instance.new("TextButton", SList); b.Size = UDim2.new(1, 0, 0, 30); b.Text = t; b.BackgroundColor3 = Color3.fromRGB(35, 35, 45); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.BorderSizePixel = 0
-    b.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
+    local b = Instance.new("TextButton", SList)
+    b.Size = UDim2.new(1, 0, 0, 30)
+    b.Text = t
+    b.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    b.TextColor3 = Color3.new(1, 1, 1)
+    b.Font = Enum.Font.Gotham
+    b.BorderSizePixel = 0
+    
+    b.MouseButton1Click:Connect(function()
+        -- Update teks tombol di Webhook Page (Kita perlu arahkan ke tombol Tier)
+        if _G.TierBtn then
+            _G.TierBtn.Text = t
+            _G.TierBtn.TextColor3 = Color3.fromRGB(255, 50, 150) -- Ubah warna jadi pink saat terpilih
+        end
+        SearchMenu.Visible = false
+    end)
 end
 
 -- [[ 2. MAIN FRAME & CONTROLS ]]
@@ -104,10 +118,36 @@ local DiscordID = AddInput("Input ID Discord", 50, "Input Here")
 local WebhookURL = AddInput("Webhook URL", 115, "Input Here")
 
 local function AddWhFilter(lbl, y, search)
-    local F = Instance.new("Frame", WebhookPage); F.Size = UDim2.new(0.9, 0, 0, 35); F.Position = UDim2.new(0.05, 0, 0, y); F.BackgroundTransparency = 1
-    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0.4, 0, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1, 1, 1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
-    local B = Instance.new("TextButton", F); B.Text = "Select Options"; B.Position = UDim2.new(0.4, 0, 0, 0); B.Size = UDim2.new(0.6, 0, 1, 0); B.BackgroundColor3 = Color3.fromRGB(35, 35, 45); B.TextColor3 = Color3.fromRGB(200, 200, 200); Instance.new("UICorner", B)
-    if search then B.MouseButton1Click:Connect(function() SearchMenu.Visible = not SearchMenu.Visible end) end
+    local F = Instance.new("Frame", WebhookPage)
+    F.Size = UDim2.new(0.9, 0, 0, 35)
+    F.Position = UDim2.new(0.05, 0, 0, y)
+    F.BackgroundTransparency = 1
+    
+    local L = Instance.new("TextLabel", F)
+    L.Text = lbl
+    L.Size = UDim2.new(0.4, 0, 1, 0)
+    L.Font = Enum.Font.Gotham
+    L.TextColor3 = Color3.new(1, 1, 1)
+    L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    
+    local B = Instance.new("TextButton", F)
+    B.Text = "Select Options"
+    B.Position = UDim2.new(0.4, 0, 0, 0)
+    B.Size = UDim2.new(0.6, 0, 1, 0)
+    B.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    B.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Instance.new("UICorner", B)
+    
+    -- JIKA INI ADALAH TIER FILTER, SIMPAN REFERENSINYA
+    if lbl == "Tier Filter" then
+        _G.TierBtn = B
+    end
+
+    if search then 
+        B.MouseButton1Click:Connect(function() 
+            SearchMenu.Visible = not SearchMenu.Visible 
+        end) 
+    end
 end
 
 AddWhFilter("Tier Filter", 185, true)
