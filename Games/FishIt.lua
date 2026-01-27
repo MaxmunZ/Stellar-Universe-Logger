@@ -129,13 +129,15 @@ TestBtn.Position = UDim2.new(0.05, 0, 0, 355)
 TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 TestBtn.Text = "Tests Webhook Connection"
 TestBtn.TextColor3 = Color3.new(1,1,1)
+TestBtn.Font = Enum.Font.Gotham
 Instance.new("UICorner", TestBtn)
 
 TestBtn.MouseButton1Click:Connect(function()
-    local url = WebhookURL.Text -- Mengambil teks dari input box
+    local rawUrl = WebhookURL.Text:gsub("%s+", "") -- Menghapus spasi yang tidak sengaja terketik
     
-    if url == "" or not url:find("discord.com/api/webhooks") then
-        TestBtn.Text = "Invalid Webhook URL!"
+    -- Validasi apakah URL benar-benar link Discord
+    if rawUrl == "" or not rawUrl:find("discord") then
+        TestBtn.Text = "URL Kosong / Salah!"
         TestBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
         task.wait(2)
         TestBtn.Text = "Tests Webhook Connection"
@@ -144,26 +146,34 @@ TestBtn.MouseButton1Click:Connect(function()
     end
 
     local data = {
-        ["content"] = "Ding dongggg! <@" .. DiscordID.Text .. ">", -- Mention kamu jika ID diisi
+        ["content"] = DiscordID.Text ~= "" and "Notification for <@" .. DiscordID.Text .. ">" or "Stellar System Test",
         ["embeds"] = {{
-            ["title"] = "Stellar System Connection Test",
-            ["description"] = "Webhook is successfully connected to the script!",
-            ["image"] = {["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"},
-            ["color"] = 41727
+            ["title"] = "✅ Connection Successful",
+            ["description"] = "Webhook Stellar System berhasil terhubung!",
+            ["color"] = 41727,
+            ["image"] = {["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"}
         }}
     }
 
+    -- Proses pengiriman
     local success, err = pcall(function()
-        return HttpService:PostAsync(url, HttpService:JSONEncode(data))
+        return request({ -- Menggunakan fungsi request (standar executor seperti Delta/Fluxus)
+            Url = rawUrl,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(data)
+        })
     end)
 
     if success then
         TestBtn.Text = "Successfully Sent!"
         TestBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+        print("Stellar: Webhook terkirim!")
     else
-        warn("Stellar Error: " .. err) -- Cek di F9 jika gagal
-        TestBtn.Text = "Failed to Send!"
-        TestBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+        -- Jika gagal, cek F9 (Console) untuk melihat pesan errornya
+        TestBtn.Text = "Failed! Check F9"
+        TestBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+        warn("Stellar Webhook Error: " .. tostring(err))
     end
 
     task.wait(2)
