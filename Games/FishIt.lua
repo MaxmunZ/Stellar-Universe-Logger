@@ -1,15 +1,10 @@
 -- [[ STELLAR SYSTEM FINAL UI - REVISED VERSION ]]
 -- Developer: Luc Aetheryn
--- Fix: Webhook Toggle & Data Detection Accuracy
+-- Fix: Webhook Test Functionality for Executors
 
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Inisialisasi awal variabel global agar tidak nil
-_G.WebhookEnabled = false 
 
 -- [[ GITHUB ASSET HANDLER ]]
 local function GetStellarAsset(fileName, url)
@@ -38,7 +33,7 @@ Instance.new("UICorner", SearchMenu)
 
 local SList = Instance.new("ScrollingFrame", SearchMenu); SList.Size = UDim2.new(1, 0, 1, -10); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0
 Instance.new("UIListLayout", SList)
-local SelectedTiers = {} 
+local SelectedTiers = {} -- Tempat menyimpan pilihan yang dipilih
 
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
@@ -51,15 +46,18 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
     
     b.MouseButton1Click:Connect(function()
         if table.find(SelectedTiers, t) then
+            -- Jika sudah ada, hapus dari daftar (Deselect)
             for i, v in ipairs(SelectedTiers) do
                 if v == t then table.remove(SelectedTiers, i) end
             end
-            b.TextColor3 = Color3.fromRGB(200, 200, 200)
+            b.TextColor3 = Color3.fromRGB(200, 200, 200) -- Warna normal
         else
+            -- Jika belum ada, tambahkan ke daftar (Select)
             table.insert(SelectedTiers, t)
-            b.TextColor3 = Color3.fromRGB(255, 50, 150)
+            b.TextColor3 = Color3.fromRGB(255, 50, 150) -- Warna pink (aktif)
         end
         
+        -- Update teks tombol di Webhook Page agar menampilkan pilihan
         if _G.TierBtn then
             if #SelectedTiers == 0 then
                 _G.TierBtn.Text = "Select Options"
@@ -70,6 +68,7 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
     end)
 end
 
+-- Tambahkan tombol "Close" di bawah list agar user bisa menutup menu setelah memilih
 local CloseSearch = Instance.new("TextButton", SearchMenu)
 CloseSearch.Size = UDim2.new(1, 0, 0, 25)
 CloseSearch.Position = UDim2.new(0, 0, 1, 0)
@@ -165,6 +164,7 @@ local function AddWhFilter(lbl, y, search)
     B.TextColor3 = Color3.fromRGB(200, 200, 200)
     Instance.new("UICorner", B)
     
+    -- JIKA INI ADALAH TIER FILTER, SIMPAN REFERENSINYA
     if lbl == "Tier Filter" then
         _G.TierBtn = B
     end
@@ -187,12 +187,12 @@ local function AddWhToggle(lbl, y)
     local T = Instance.new("Frame", BG); T.Size = UDim2.fromOffset(18, 18); T.Position = UDim2.new(0, 2, 0.5, -9); T.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", T).CornerRadius = UDim.new(1, 0)
     
     BG.MouseButton1Click:Connect(function() 
-        if lbl == "Send Fish Webhook" then
-            _G.WebhookEnabled = not _G.WebhookEnabled
-            local s = _G.WebhookEnabled
-            BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55)
-            TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
-        end
+        local s = BG.BackgroundColor3 == Color3.fromRGB(45, 45, 55)
+        BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55)
+        TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
+        
+        -- SIMPAN STATUS TOGEL
+        if lbl == "Send Fish Webhook" then _G.WebhookEnabled = s end
     end)
 end
 
@@ -200,6 +200,7 @@ AddWhToggle("Send Fish Webhook", 310)
 
 local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
 
+-- [[ FIX: PENGGUNAAN REQUEST UNTUK EXECUTOR ]]
 TestBtn.MouseButton1Click:Connect(function()
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then
@@ -249,41 +250,41 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. UPGRADED FISHING LOGIC ]]
-local function SendFishNotification(name, rarity, price, zone, mutation, weight, user)
+-- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
+local function SendFishNotification(fishName, fishTier, fishPrice, fishZone, fishImage)
     -- CEK APAKAH TOGGLE MENYALA
-    if _G.WebhookEnabled ~= true then return end
+    if not _G.WebhookEnabled then return end
 
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- FILTER TIER
+    -- FILTER TIER (Pastikan kamu sudah pilih Common/Rare di UI Tier Filter)
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter ~= "Select Options" and not currentFilter:lower():find(rarity:lower()) then 
+    if currentFilter ~= "Select Options" and not currentFilter:find(fishTier) then 
         return 
     end
 
-    local embedColor = 16777215
-    if rarity:find("Legendary") then embedColor = 16761095
-    elseif rarity:find("Mythic") then embedColor = 11342935
-    elseif rarity:find("Secret") then embedColor = 16711820 
+    -- Menentukan warna embed berdasarkan Tier
+    local embedColor = 16777215 -- Putih (Default)
+    if fishTier == "Legendary" then embedColor = 16761095 -- Emas
+    elseif fishTier == "Mythic" then embedColor = 11342935 -- Ungu
+    elseif fishTier == "Secret" then embedColor = 16711820 -- Pink/Merah
     end
 
     local data = {
-        ["content"] = DiscordID.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW CATCH!**",
+        ["content"] = DiscordID.Text ~= "" and "🎣 **NEW RARE CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW RARE CATCH!**",
         ["embeds"] = {{
-            ["title"] = "⭐ Stellar System | Catch Log",
+            ["title"] = "⭐ Stellar System | Rare Catch!",
+            ["description"] = "A magnificent fish has been caught in **Fish It**!",
             ["color"] = embedColor,
+            ["thumbnail"] = {["url"] = fishImage or "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"},
             ["fields"] = {
-                {["name"] = "👤 Player", ["value"] = "```" .. user .. "```", ["inline"] = true},
-                {["name"] = "🐟 Fish", ["value"] = "```" .. name .. "```", ["inline"] = true},
-                {["name"] = "✨ Mutation", ["value"] = "```" .. mutation .. "```", ["inline"] = true},
-                {["name"] = "💎 Rarity", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
-                {["name"] = "⚖️ Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
-                {["name"] = "💰 Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
-                {["name"] = "📍 Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
+                {["name"] = "🐟 Fish Name", ["value"] = "```" .. fishName .. "```", ["inline"] = true},
+                {["name"] = "💎 Tier", ["value"] = "```" .. fishTier .. "```", ["inline"] = true},
+                {["name"] = "💰 Value", ["value"] = "```$" .. (fishPrice or "0") .. "```", ["inline"] = true},
+                {["name"] = "📍 Zone", ["value"] = "```" .. (fishZone or "Unknown") .. "```", ["inline"] = false}
             },
-            ["footer"] = {["text"] = "Stellar System • Luc Aetheryn"},
+            ["footer"] = {["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -298,35 +299,31 @@ local function SendFishNotification(name, rarity, price, zone, mutation, weight,
     end)
 end
 
--- [[ 7. UNIVERSAL GAME DETECTOR UNIVERSAL SNIFFER DETECTOR ]]
-local LP = game:GetService("Players").LocalPlayer
+-- [[ 7. GAME EVENT DETECTOR - SAFE MODE ]]
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
 
--- Fungsi untuk membongkar tabel data dari game
-local function HandleData(data)
-    if type(data) ~= "table" then return end
-    if not (data.Name or data.Rarity or data.Tier) then return end
-
-    local n = data.Name or data.FishName or "Unknown"
-    local r = data.Rarity or data.Tier or "Common"
-    local p = data.Price or data.Value or data.SellValue or "0"
-    local w = data.Weight or data.Lbs or (data.Amount and tostring(data.Amount).." lbs") or "N/A"
-    local m = data.Mutation or data.Variant or "None"
-    local z = data.Zone or data.Location or "Main Ocean"
+if Remotes then
+    -- Mencoba beberapa kemungkinan nama RemoteEvent di game Fish It
+    local CatchEvent = Remotes:FindFirstChild("FishCaught") or Remotes:FindFirstChild("CatchFish") or Remotes:FindFirstChild("CompleteMinigame")
     
-    -- Panggil pengirim (Bagian 6)
-    SendFishNotification(n, r, p, z, m, w, LP.Name)
-end
+    if CatchEvent then
+        CatchEvent.OnClientEvent:Connect(function(data1, data2)
+            -- Beberapa game mengirim data langsung, beberapa mengirim dalam Table
+            local fishData = (type(data1) == "table") and data1 or (type(data2) == "table" and data2) or {}
+            
+            local name = fishData.Name or fishData.FishName or data1 or "Unknown"
+            local tier = fishData.Tier or fishData.Rarity or data2 or "Common"
+            local price = fishData.Price or fishData.Value or "0"
+            local zone = fishData.Zone or "Main Ocean"
+            
+            local imageId = fishData.Image or fishData.Icon or ""
+            local imageUrl = "https://www.roblox.com/asset-thumbnail/image?assetId=" .. tostring(imageId):gsub("%D", "") .. "&width=420&height=420&format=png"
 
--- Memantau SEMUA RemoteEvent di dalam game tanpa kecuali
-for _, v in pairs(game:GetDescendants()) do
-    if v:IsA("RemoteEvent") then
-        v.OnClientEvent:Connect(function(...)
-            local args = {...}
-            for _, arg in pairs(args) do
-                if type(arg) == "table" then
-                    HandleData(arg)
-                end
-            end
+            -- Print di Console (F9) untuk memantau jika ada ikan masuk
+            print("Stellar Catch: " .. name .. " | " .. tier)
+            
+            SendFishNotification(name, tier, price, zone, imageUrl)
         end)
     end
 end
