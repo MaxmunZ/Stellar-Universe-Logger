@@ -40,8 +40,20 @@ SocialSec:NewButton("COPY DISCORD LINK", "Link: discord.gg/QEhHc6UBHH", function
     })
 end)
 
--- Sidebar Tabs (Struktur Mandiri Stellar System)
+-- [[ TAB FISHING ]]
 local Tab2 = Window:NewTab("Fishing")
+
+-- Kategori Sesuai Gambar Referensi
+local SecSupport = Tab2:NewSection("Fishing Support")
+local SecFeatures = Tab2:NewSection("Fishing Features")
+local SecInstant = Tab2:NewSection("Instant Features")
+local SecBlatantV1 = Tab2:NewSection("Blatant v1 Features")
+local SecBlatantV2 = Tab2:NewSection("Blatant v2 Features")
+local SecSelling = Tab2:NewSection("Selling Features")
+local SecFavorite = Tab2:NewSection("Favorite Features")
+local SecRejoin = Tab2:NewSection("Auto Rejoin Features")
+
+-- Sidebar Tabs (Struktur Mandiri Stellar System)
 local Tab3 = Window:NewTab("Automatically")
 local Tab4 = Window:NewTab("Trading")
 local Tab5 = Window:NewTab("Quest")
