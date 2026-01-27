@@ -140,8 +140,8 @@ local function AddInput(lbl, y, placeholder)
     return I
 end
 
-local DiscordID = AddInput("Input ID Discord", 50, "Input Here")
-local WebhookURL = AddInput("Webhook URL", 115, "Input Here")
+local DiscordIDBox = AddInput("Input ID Discord", 50, "Input Here")
+local WebhookURLBox = AddInput("Webhook URL", 115, "Input Here")
 
 local function AddWhFilter(lbl, y, search)
     local F = Instance.new("Frame", WebhookPage)
@@ -253,21 +253,26 @@ end
 -- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
 local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
     if not _G.WebhookEnabled then return end
-    local url = WebhookURL.Text:gsub("%s+", "")
+    
+    -- Mengambil teks langsung dari objek UI saat fungsi dipanggil
+    local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Filter Tier
+    -- Filter Tier (Case Insensitive Fix)
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
+    if currentFilter ~= "Select Options" and not currentFilter:lower():find(rarity:lower()) then 
+        return 
+    end
 
     local embedColor = 16777215
-    if rarity == "Legendary" then embedColor = 16761095
-    elseif rarity == "Mythic" then embedColor = 11342935
-    elseif rarity == "Secret" then embedColor = 16711820 
+    local r = rarity:lower()
+    if r:find("legendary") then embedColor = 16761095
+    elseif r:find("mythic") then embedColor = 11342935
+    elseif r:find("secret") then embedColor = 16711820 
     end
 
     local data = {
-        ["content"] = DiscordID.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW CATCH!**",
+        ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
             ["color"] = embedColor,
