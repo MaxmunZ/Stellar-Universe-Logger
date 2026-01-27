@@ -1,52 +1,46 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local RedzLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/RHEZAL-D/Redz-Library/main/Source.lua"))()
 
-local Window = Rayfield:CreateWindow({
-   Name = "STELLAR SYSTEM | Fish It",
-   LoadingTitle = "Luc Aetheryn Edition",
-   LoadingSubtitle = "by Stellar System",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "StellarFish", 
-      FileName = "Config"
-   },
-   Discord = {
-      Enabled = true,
-      Invite = "QEhHc6UBHH", 
-      RememberJoins = true 
-   },
-   KeySystem = false -- Dibuat false agar langsung masuk
+local Window = RedzLib:MakeWindow({
+  Name = "STELLAR SYSTEM",
+  SubTitle = "by Luc Aetheryn",
+  SaveConfig = true,
+  ConfigFolder = "StellarFish"
+})
+
+-- MENGATUR TEMA WARNA (Ungu-Magenta)
+Window:ChangeColor(Color3.fromRGB(191, 64, 191)) 
+
+-- MENAMBAHKAN TOMBOL MINIMIZE KE LOGO STELLAR
+Window:AddMinimizeButton({
+  Button = { Image = "rbxassetid://1000304092", BackgroundColor3 = Color3.fromRGB(30, 30, 45) },
+  Corner = { CornerRadius = UDim.new(0, 10) }
 })
 
 -- [[ TAB INFO ]]
-local Tab1 = Window:CreateTab("Info", 4483345998)
-local SectionInfo = Tab1:CreateSection("Stellar System Information")
-
-Tab1:AddParagraph("Owner", "Luc Aetheryn")
-Tab1:AddParagraph("Status", "ONLINE - Stable Version")
-
-Tab1:AddButton({
-   Name = "Copy Discord Link",
-   Callback = function()
-      setclipboard("https://discord.gg/QEhHc6UBHH")
-      Rayfield:Notify({Title = "Stellar System", Content = "Discord Link Copied!", Duration = 3})
-   end,
-})
+local Tab1 = Window:MakeTab({"Info", "info"})
+Tab1:AddSection("Information")
+Tab1:AddParagraph("Owner: Luc Aetheryn")
+Tab1:AddParagraph("Status: Online")
 
 -- [[ TAB FISHING ]]
-local Tab2 = Window:CreateTab("Fishing", 4483345998)
-Tab2:CreateSection("Fishing Features")
-Tab2:AddLabel("Main Features Coming Soon")
+local Tab2 = Window:MakeTab({"Fishing", "fish"})
+Tab2:AddSection("Fishing Support")
+Tab2:AddSection("Fishing Features")
 
 -- [[ TAB AUTOMATICALLY ]]
-local Tab3 = Window:CreateTab("Automatically", 4483345998)
-Tab3:CreateSection("Shop & Support")
+local Tab3 = Window:MakeTab({"Automatically", "play"})
+Tab3:AddSection("Automation Features")
+
+-- [[ TAB TRADING ]]
+local Tab4 = Window:MakeTab({"Trading", "repeat"})
+Tab4:AddSection("Trading Features")
 
 -- [[ TAB QUEST ]]
-local Tab4 = Window:CreateTab("Quest", 4483345998)
-Tab4:CreateSection("Artifact & Event")
-Tab4:AddButton({Name = "Ghostfin Quest", Callback = function() end}) -- Sesuai Permintaan
-Tab4:AddButton({Name = "Diamond Quest", Callback = function() end}) -- Sesuai Permintaan
+local Tab5 = Window:MakeTab({"Quest", "scroll"})
+Tab5:AddSection("Quest Progress")
+Tab5:AddButton({"Ghostfin Quest", function() end}) -- Sesuai Permintaan
+Tab5:AddButton({"Diamond Quest", function() end}) -- Sesuai Permintaan
 
 -- [[ TAB TELEPORT ]]
-local Tab5 = Window:CreateTab("Teleport", 4483345998)
-Tab5:CreateSection("Teleport Player")
+local Tab6 = Window:MakeTab({"Teleport", "map-pin"})
+Tab6:AddSection("Teleport Location")
