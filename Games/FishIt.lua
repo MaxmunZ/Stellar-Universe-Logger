@@ -7,8 +7,7 @@ local Window = OrionLib:MakeWindow({
     IntroText = "Stellar Universe"
 })
 
--- [[ TAB SELECTOR - PERSIS CHLOE X ]]
--- Setiap Tab di bawah ini akan muncul di sidebar kiri
+-- [[ SIDEBAR NAVIGATION - PERSIS REFERENSI ]]
 local Tab1 = Window:MakeTab({Name = "Info", Icon = "rbxassetid://4483345998"})
 local Tab2 = Window:MakeTab({Name = "Fishing", Icon = "rbxassetid://4483360581"})
 local Tab3 = Window:MakeTab({Name = "Automatically", Icon = "rbxassetid://4483360581"})
@@ -26,6 +25,16 @@ Tab1:AddButton({
     end    
 })
 
+-- Webhook Field (Mirip Chloe X)
+Tab1:AddTextbox({
+    Name = "Webhook URL",
+    Default = "",
+    TextDisplace = "Tempel link webhook di sini...",
+    Callback = function(Value)
+        _G.FishWebhook = Value
+    end	
+})
+
 -- [[ ISI TAB FISHING ]]
 Tab2:AddToggle({
     Name = "Auto Fishing",
@@ -33,20 +42,10 @@ Tab2:AddToggle({
     Callback = function(Value)
         _G.StellarAutoFarm = Value
         if Value then
-            OrionLib:MakeNotification({Name = "Stellar", Content = "Auto Fishing Started!", Time = 2})
-            -- Masukkan logika pancing di sini
+            OrionLib:MakeNotification({Name = "Stellar", Content = "Auto Fishing Aktif!", Time = 2})
+            -- Logika pancing Anda di sini
         end
     end    
-})
-
--- [[ ISI TAB WEBHOOK (Di dalam Menu/Info) ]]
-Tab1:AddTextbox({
-    Name = "Webhook URL",
-    Default = "",
-    TextDisplace = "Tempel Link Disini...",
-    Callback = function(Value)
-        _G.FishWebhook = Value
-    end	
 })
 
 OrionLib:Init()
