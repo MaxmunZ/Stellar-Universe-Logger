@@ -33,24 +33,50 @@ Instance.new("UICorner", SearchMenu)
 
 local SList = Instance.new("ScrollingFrame", SearchMenu); SList.Size = UDim2.new(1, 0, 1, -10); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0
 Instance.new("UIListLayout", SList)
+local SelectedTiers = {} -- Tempat menyimpan pilihan yang dipilih
+
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
     b.Size = UDim2.new(1, 0, 0, 30)
     b.Text = t
     b.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-    b.TextColor3 = Color3.new(1, 1, 1)
+    b.TextColor3 = Color3.fromRGB(200, 200, 200)
     b.Font = Enum.Font.Gotham
     b.BorderSizePixel = 0
     
     b.MouseButton1Click:Connect(function()
-        -- Update teks tombol di Webhook Page (Kita perlu arahkan ke tombol Tier)
-        if _G.TierBtn then
-            _G.TierBtn.Text = t
-            _G.TierBtn.TextColor3 = Color3.fromRGB(255, 50, 150) -- Ubah warna jadi pink saat terpilih
+        if table.find(SelectedTiers, t) then
+            -- Jika sudah ada, hapus dari daftar (Deselect)
+            for i, v in ipairs(SelectedTiers) do
+                if v == t then table.remove(SelectedTiers, i) end
+            end
+            b.TextColor3 = Color3.fromRGB(200, 200, 200) -- Warna normal
+        else
+            -- Jika belum ada, tambahkan ke daftar (Select)
+            table.insert(SelectedTiers, t)
+            b.TextColor3 = Color3.fromRGB(255, 50, 150) -- Warna pink (aktif)
         end
-        SearchMenu.Visible = false
+        
+        -- Update teks tombol di Webhook Page agar menampilkan pilihan
+        if _G.TierBtn then
+            if #SelectedTiers == 0 then
+                _G.TierBtn.Text = "Select Options"
+            else
+                _G.TierBtn.Text = table.concat(SelectedTiers, ", ")
+            end
+        end
     end)
 end
+
+-- Tambahkan tombol "Close" di bawah list agar user bisa menutup menu setelah memilih
+local CloseSearch = Instance.new("TextButton", SearchMenu)
+CloseSearch.Size = UDim2.new(1, 0, 0, 25)
+CloseSearch.Position = UDim2.new(0, 0, 1, 0)
+CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
+CloseSearch.Text = "Done"
+CloseSearch.TextColor3 = Color3.new(1,1,1)
+CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
+
 
 -- [[ 2. MAIN FRAME & CONTROLS ]]
 local FloatBtn = Instance.new("ImageButton", ScreenGui); FloatBtn.Size = UDim2.fromOffset(50, 50); FloatBtn.Position = UDim2.new(0.05, 0, 0.2, 0); FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35); FloatBtn.Image = LogoStellar; FloatBtn.Visible = false; FloatBtn.Active = true; FloatBtn.Draggable = true; Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
@@ -221,8 +247,10 @@ local function SendFishNotification(fishName, fishTier)
     if url == "" or not url:find("discord") then return end
     
     -- Filter: Hanya kirim jika ikan adalah Legendary, Mythic, atau Secret
-    local selectedTiers = "Legendary, Mythic, Secret" 
-    if not selectedTiers:find(fishTier) then return end
+    local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
+if currentFilter == "Select Options" or not currentFilter:find(fishTier) then 
+    return 
+end
 
     local data = {
         ["content"] = DiscordID.Text ~= "" and "🎣 **Rare Catch!** <@"..DiscordID.Text..">" or "🎣 **Rare Catch!**",
