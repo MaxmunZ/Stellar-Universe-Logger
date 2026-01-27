@@ -33,10 +33,50 @@ Instance.new("UICorner", SearchMenu)
 
 local SList = Instance.new("ScrollingFrame", SearchMenu); SList.Size = UDim2.new(1, 0, 1, -10); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0
 Instance.new("UIListLayout", SList)
+local SelectedTiers = {} -- Tempat menyimpan pilihan yang dipilih
+
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
-    local b = Instance.new("TextButton", SList); b.Size = UDim2.new(1, 0, 0, 30); b.Text = t; b.BackgroundColor3 = Color3.fromRGB(35, 35, 45); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.BorderSizePixel = 0
-    b.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
+    local b = Instance.new("TextButton", SList)
+    b.Size = UDim2.new(1, 0, 0, 30)
+    b.Text = t
+    b.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    b.TextColor3 = Color3.fromRGB(200, 200, 200)
+    b.Font = Enum.Font.Gotham
+    b.BorderSizePixel = 0
+    
+    b.MouseButton1Click:Connect(function()
+        if table.find(SelectedTiers, t) then
+            -- Jika sudah ada, hapus dari daftar (Deselect)
+            for i, v in ipairs(SelectedTiers) do
+                if v == t then table.remove(SelectedTiers, i) end
+            end
+            b.TextColor3 = Color3.fromRGB(200, 200, 200) -- Warna normal
+        else
+            -- Jika belum ada, tambahkan ke daftar (Select)
+            table.insert(SelectedTiers, t)
+            b.TextColor3 = Color3.fromRGB(255, 50, 150) -- Warna pink (aktif)
+        end
+        
+        -- Update teks tombol di Webhook Page agar menampilkan pilihan
+        if _G.TierBtn then
+            if #SelectedTiers == 0 then
+                _G.TierBtn.Text = "Select Options"
+            else
+                _G.TierBtn.Text = table.concat(SelectedTiers, ", ")
+            end
+        end
+    end)
 end
+
+-- Tambahkan tombol "Close" di bawah list agar user bisa menutup menu setelah memilih
+local CloseSearch = Instance.new("TextButton", SearchMenu)
+CloseSearch.Size = UDim2.new(1, 0, 0, 25)
+CloseSearch.Position = UDim2.new(0, 0, 1, 0)
+CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
+CloseSearch.Text = "Done"
+CloseSearch.TextColor3 = Color3.new(1,1,1)
+CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
+
 
 -- [[ 2. MAIN FRAME & CONTROLS ]]
 local FloatBtn = Instance.new("ImageButton", ScreenGui); FloatBtn.Size = UDim2.fromOffset(50, 50); FloatBtn.Position = UDim2.new(0.05, 0, 0.2, 0); FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35); FloatBtn.Image = LogoStellar; FloatBtn.Visible = false; FloatBtn.Active = true; FloatBtn.Draggable = true; Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
@@ -104,10 +144,36 @@ local DiscordID = AddInput("Input ID Discord", 50, "Input Here")
 local WebhookURL = AddInput("Webhook URL", 115, "Input Here")
 
 local function AddWhFilter(lbl, y, search)
-    local F = Instance.new("Frame", WebhookPage); F.Size = UDim2.new(0.9, 0, 0, 35); F.Position = UDim2.new(0.05, 0, 0, y); F.BackgroundTransparency = 1
-    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0.4, 0, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1, 1, 1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
-    local B = Instance.new("TextButton", F); B.Text = "Select Options"; B.Position = UDim2.new(0.4, 0, 0, 0); B.Size = UDim2.new(0.6, 0, 1, 0); B.BackgroundColor3 = Color3.fromRGB(35, 35, 45); B.TextColor3 = Color3.fromRGB(200, 200, 200); Instance.new("UICorner", B)
-    if search then B.MouseButton1Click:Connect(function() SearchMenu.Visible = not SearchMenu.Visible end) end
+    local F = Instance.new("Frame", WebhookPage)
+    F.Size = UDim2.new(0.9, 0, 0, 35)
+    F.Position = UDim2.new(0.05, 0, 0, y)
+    F.BackgroundTransparency = 1
+    
+    local L = Instance.new("TextLabel", F)
+    L.Text = lbl
+    L.Size = UDim2.new(0.4, 0, 1, 0)
+    L.Font = Enum.Font.Gotham
+    L.TextColor3 = Color3.new(1, 1, 1)
+    L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    
+    local B = Instance.new("TextButton", F)
+    B.Text = "Select Options"
+    B.Position = UDim2.new(0.4, 0, 0, 0)
+    B.Size = UDim2.new(0.6, 0, 1, 0)
+    B.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    B.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Instance.new("UICorner", B)
+    
+    -- JIKA INI ADALAH TIER FILTER, SIMPAN REFERENSINYA
+    if lbl == "Tier Filter" then
+        _G.TierBtn = B
+    end
+
+    if search then 
+        B.MouseButton1Click:Connect(function() 
+            SearchMenu.Visible = not SearchMenu.Visible 
+        end) 
+    end
 end
 
 AddWhFilter("Tier Filter", 185, true)
@@ -119,8 +185,17 @@ local function AddWhToggle(lbl, y)
     local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0.7, 0, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1, 1, 1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
     local BG = Instance.new("TextButton", F); BG.Size = UDim2.fromOffset(45, 22); BG.Position = UDim2.new(1, -45, 0.5, -11); BG.BackgroundColor3 = Color3.fromRGB(45, 45, 55); BG.Text = ""; Instance.new("UICorner", BG).CornerRadius = UDim.new(1, 0)
     local T = Instance.new("Frame", BG); T.Size = UDim2.fromOffset(18, 18); T.Position = UDim2.new(0, 2, 0.5, -9); T.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", T).CornerRadius = UDim.new(1, 0)
-    BG.MouseButton1Click:Connect(function() local s = BG.BackgroundColor3 == Color3.fromRGB(45, 45, 55); BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55); TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play() end)
+    
+    BG.MouseButton1Click:Connect(function() 
+        local s = BG.BackgroundColor3 == Color3.fromRGB(45, 45, 55)
+        BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55)
+        TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
+        
+        -- SIMPAN STATUS TOGEL
+        if lbl == "Send Fish Webhook" then _G.WebhookEnabled = s end
+    end)
 end
+
 AddWhToggle("Send Fish Webhook", 310)
 
 local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
@@ -175,27 +250,37 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. FISHING LOGIC & WEBHOOK SENDER ]]
-local function SendFishNotification(fishName, fishTier)
+-- [[ 6. UPGRADED WEBHOOK EMBED ]]
+local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
+    if not _G.WebhookEnabled then return end
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Mengambil data filter dari UI (Mythic, Secret, dll)
-    -- Jika kamu ingin otomatis kirim semua, hapus pengecekan 'if' di bawah
-    local selectedTiers = "Mythic, Secret, Legendary" 
-    if not selectedTiers:find(fishTier) then return end
+    -- Filter Tier
+    local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
+    if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
+
+    local embedColor = 16777215
+    if rarity == "Legendary" then embedColor = 16761095
+    elseif rarity == "Mythic" then embedColor = 11342935
+    elseif rarity == "Secret" then embedColor = 16711820 
+    end
 
     local data = {
-        ["content"] = DiscordID.Text ~= "" and "🎣 **Rare Catch!** <@"..DiscordID.Text..">" or "🎣 **Rare Catch!**",
+        ["content"] = DiscordID.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
-            ["title"] = "Stellar System | New Catch!",
-            ["description"] = "Successfully caught a rare fish!",
-            ["color"] = 41727,
+            ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
+            ["color"] = embedColor,
             ["fields"] = {
-                {["name"] = "Fish Name", ["value"] = fishName, ["inline"] = true},
-                {["name"] = "Tier", ["value"] = fishTier, ["inline"] = true}
+                {["name"] = "👤 Player", ["value"] = "```" .. user .. "```", ["inline"] = true},
+                {["name"] = "🐟 Fish", ["value"] = "```" .. name .. "```", ["inline"] = true},
+                {["name"] = "✨ Mutation", ["value"] = "```" .. mutation .. "```", ["inline"] = true},
+                {["name"] = "💎 Rarity", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
+                {["name"] = "⚖️ Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
+                {["name"] = "💰 Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
+                {["name"] = "📍 Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
             },
-            ["footer"] = {["text"] = "Stellar System | Luc Aetheryn"},
+            ["footer"] = {["text"] = "Stellar System • Luc Aetheryn"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -210,15 +295,41 @@ local function SendFishNotification(fishName, fishTier)
     end)
 end
 
--- Contoh deteksi ikan (Sesuaikan dengan RemoteEvent game kamu)
--- Biasanya diletakkan di bawah SendFishNotification
-local FishingEvent = game:GetService("ReplicatedStorage"):FindFirstChild("Events") -- Ganti ini
+-- [[ 7. OPTIMIZED GAME DETECTOR ]]
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-if FishingEvent then
-    FishingEvent.OnClientEvent:Connect(function(fishDetails)
-        -- Contoh: fishDetails memiliki Name dan Tier
-        SendFishNotification(fishDetails.Name, fishDetails.Tier)
-    end)
+local function HandleFishData(data)
+    if type(data) ~= "table" then return end
+
+    -- Mengambil data spesifik dari table game
+    local name = data.Name or data.FishName or "Unknown"
+    local rarity = data.Rarity or data.Tier or "Common"
+    local price = data.Price or data.Value or data.SellValue or "0"
+    local weight = data.Weight or data.Lbs or "N/A"
+    local mutation = data.Mutation or data.Variant or "None"
+    local zone = data.Zone or data.Location or "Unknown Zone"
+    
+    -- Mengambil Username pembawa keberuntungan
+    local username = LocalPlayer.Name
+
+    -- Kirim ke fungsi Webhook yang sudah di-upgrade
+    SendFishNotification(name, rarity, price, zone, "", mutation, weight, username)
+end
+
+-- Listener otomatis untuk RemoteEvent game
+for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+    if v:IsA("RemoteEvent") then
+        v.OnClientEvent:Connect(function(...)
+            local args = {...}
+            for _, arg in pairs(args) do
+                if type(arg) == "table" and (arg.Name or arg.FishName) then
+                    HandleFishData(arg)
+                end
+            end
+        end)
+    end
 end
 
 ShowPage("Info")
