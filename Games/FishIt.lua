@@ -187,11 +187,12 @@ local function AddWhToggle(lbl, y)
     local T = Instance.new("Frame", BG); T.Size = UDim2.fromOffset(18, 18); T.Position = UDim2.new(0, 2, 0.5, -9); T.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", T).CornerRadius = UDim.new(1, 0)
     
     BG.MouseButton1Click:Connect(function() 
-        local s = not _G.WebhookEnabled -- Balikkan nilai saat ini
-        _G.WebhookEnabled = s
-        
-        BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55)
-        TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
+        if lbl == "Send Fish Webhook" then
+            _G.WebhookEnabled = not _G.WebhookEnabled
+            local s = _G.WebhookEnabled
+            BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55)
+            TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
+        end
     end)
 end
 
@@ -250,15 +251,18 @@ end
 
 -- [[ 6. UPGRADED FISHING LOGIC ]]
 local function SendFishNotification(name, rarity, price, zone, mutation, weight, user)
-    -- CEK TOGGLE
-    if _G.WebhookEnabled ~= true then return end
+    if _G.WebhookEnabled ~= true then return end -- Pastikan ini terpanggil
 
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Filter Tier
+    -- Filter Rarity yang lebih akurat
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
+    if currentFilter ~= "Select Options" then
+        if not string.find(currentFilter:lower(), rarity:lower()) then
+            return 
+        end
+    end
 
     local embedColor = 16777215 
     if rarity:find("Legendary") then embedColor = 16761095 
@@ -297,30 +301,23 @@ end
 
 -- [[ 7. UNIVERSAL DEEP SCAN DETECTOR ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LP = game:GetService("Players").LocalPlayer
 
-local function ProcessFish(data)
-    if type(data) ~= "table" then return end
-    
-    -- Pemetaan data spesifik Fish It
-    local name = data.Name or data.FishName or "Unknown"
-    local rarity = data.Rarity or data.Tier or "Common"
-    local price = data.Price or data.Value or data.SellValue or "0"
-    local weight = data.Weight or data.Lbs or (data.Amount and tostring(data.Amount).." lbs") or "N/A"
-    local mutation = data.Mutation or data.Variant or "Clean"
-    local zone = data.Zone or data.Location or "Ocean"
-    
-    SendFishNotification(name, rarity, price, zone, mutation, weight, LocalPlayer.Name)
-end
-
--- Listener untuk RemoteEvent
 for _, v in pairs(ReplicatedStorage:GetDescendants()) do
     if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                -- Hanya proses jika tabel tersebut terlihat seperti data ikan
-                if type(arg) == "table" and (arg.Name or arg.Rarity or arg.FishName) then
-                    ProcessFish(arg)
+                -- Mencari tabel yang punya ciri-ciri data ikan
+                if type(arg) == "table" and (arg.Name or arg.Rarity or arg.Tier) then
+                    local name = arg.Name or arg.FishName or "Unknown"
+                    local rarity = arg.Rarity or arg.Tier or "Common"
+                    local price = arg.Price or arg.Value or arg.SellValue or "0"
+                    local weight = arg.Weight or arg.Lbs or (arg.Amount and tostring(arg.Amount).." lbs") or "N/A"
+                    local mutation = arg.Mutation or arg.Variant or "None"
+                    local zone = arg.Zone or arg.Location or "Ocean"
+                    
+                    SendFishNotification(name, rarity, price, zone, mutation, weight, LP.Name)
                 end
             end
         end)
