@@ -250,20 +250,28 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. UPGRADED WEBHOOK EMBED ]]
+-- [[ 6. UPGRADED WEBHOOK EMBED - FINAL FIX ]]
 local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
-    if not _G.WebhookEnabled then return end
+    -- Pastikan Toggle ON
+    if _G.WebhookEnabled ~= true then return end
+    
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Filter Tier
-    local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
+    -- Filter Tier (Dibuat Case-Insensitive)
+    local currentFilter = _G.TierBtn and _G.TierBtn.Text or "Select Options"
+    if currentFilter ~= "Select Options" then
+        -- Cek apakah rarity ikan ada di dalam teks tombol (contoh: "Rare" ada di "Common, Rare")
+        if not string.find(currentFilter:lower(), rarity:lower()) then 
+            return 
+        end
+    end
 
     local embedColor = 16777215
-    if rarity == "Legendary" then embedColor = 16761095
-    elseif rarity == "Mythic" then embedColor = 11342935
-    elseif rarity == "Secret" then embedColor = 16711820 
+    local r = rarity:lower()
+    if r:find("legendary") then embedColor = 16761095
+    elseif r:find("mythic") then embedColor = 11342935
+    elseif r:find("secret") then embedColor = 16711820 
     end
 
     local data = {
@@ -295,38 +303,36 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. OPTIMIZED GAME DETECTOR ]]
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local function HandleFishData(data)
-    if type(data) ~= "table" then return end
-
-    -- Mengambil data spesifik dari table game
-    local name = data.Name or data.FishName or "Unknown"
-    local rarity = data.Rarity or data.Tier or "Common"
-    local price = data.Price or data.Value or data.SellValue or "0"
-    local weight = data.Weight or data.Lbs or "N/A"
-    local mutation = data.Mutation or data.Variant or "None"
-    local zone = data.Zone or data.Location or "Unknown Zone"
+-- [[ 7. UNIVERSAL DETECTOR - DEEP SCAN ]]
+local function ScanForFish(tab)
+    if type(tab) ~= "table" then return end
     
-    -- Mengambil Username pembawa keberuntungan
-    local username = LocalPlayer.Name
-
-    -- Kirim ke fungsi Webhook yang sudah di-upgrade
-    SendFishNotification(name, rarity, price, zone, "", mutation, weight, username)
+    -- Mencari data di dalam tabel secara mendalam
+    if tab.Name or tab.FishName or tab.Rarity or tab.Tier then
+        local n = tab.Name or tab.FishName or "Unknown"
+        local r = tab.Rarity or tab.Tier or "Common"
+        local p = tab.Price or tab.Value or "0"
+        local w = tab.Weight or tab.Lbs or (tab.Amount and tostring(tab.Amount).." lbs") or "N/A"
+        local m = tab.Mutation or tab.Variant or "None"
+        local z = tab.Zone or tab.Location or "Ocean"
+        
+        SendFishNotification(n, r, p, z, "", m, w, game.Players.LocalPlayer.Name)
+        return true
+    end
+    
+    -- Jika tabel punya isi tabel lagi, bongkar terus
+    for _, v in pairs(tab) do
+        if type(v) == "table" then ScanForFish(v) end
+    end
 end
 
--- Listener otomatis untuk RemoteEvent game
-for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+-- Pantau SEMUA RemoteEvent di seluruh game
+for _, v in pairs(game:GetDescendants()) do
     if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                if type(arg) == "table" and (arg.Name or arg.FishName) then
-                    HandleFishData(arg)
-                end
+                ScanForFish(arg)
             end
         end)
     end
