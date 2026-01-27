@@ -258,7 +258,7 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     
     -- Filter Tier
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
+    if currentFilter == "Select Options" then return end
 
     local embedColor = 16777215
     if rarity == "Legendary" then embedColor = 16761095
@@ -295,41 +295,46 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. OPTIMIZED GAME DETECTOR ]]
+-- [[ 7. OPTIMIZED GAME DETECTOR - DEEP SCAN VERSION ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local function HandleFishData(data)
-    if type(data) ~= "table" then return end
-
-    -- Mengambil data spesifik dari table game
-    local name = data.Name or data.FishName or "Unknown"
-    local rarity = data.Rarity or data.Tier or "Common"
-    local price = data.Price or data.Value or data.SellValue or "0"
-    local weight = data.Weight or data.Lbs or "N/A"
-    local mutation = data.Mutation or data.Variant or "None"
-    local zone = data.Zone or data.Location or "Unknown Zone"
+local function ScanForFish(tab)
+    if type(tab) ~= "table" then return end
     
-    -- Mengambil Username pembawa keberuntungan
-    local username = LocalPlayer.Name
-
-    -- Kirim ke fungsi Webhook yang sudah di-upgrade
-    SendFishNotification(name, rarity, price, zone, "", mutation, weight, username)
+    -- Jika tabel ini berisi info ikan (punya Name/Rarity/Tier)
+    if tab.Name or tab.Rarity or tab.Tier or tab.FishName then
+        local name = tab.Name or tab.FishName or "Unknown"
+        local rarity = tab.Rarity or tab.Tier or "Common"
+        local price = tab.Price or tab.Value or tab.SellValue or "0"
+        local weight = tab.Weight or tab.Lbs or (tab.Amount and tostring(tab.Amount).." lbs") or "N/A"
+        local mutation = tab.Mutation or tab.Variant or "None"
+        local zone = tab.Zone or tab.Location or "Main Ocean"
+        
+        SendFishNotification(name, rarity, price, zone, "", mutation, weight, LocalPlayer.Name)
+        return true
+    end
+    
+    -- Deep Scan: Jika di dalam tabel ada tabel lagi, periksa isinya
+    for _, sub in pairs(tab) do
+        if type(sub) == "table" then
+            if ScanForFish(sub) then return true end
+        end
+    end
 end
 
--- Listener otomatis untuk RemoteEvent game
+-- Listener untuk semua RemoteEvent
 for _, v in pairs(ReplicatedStorage:GetDescendants()) do
     if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                if type(arg) == "table" and (arg.Name or arg.FishName) then
-                    HandleFishData(arg)
-                end
+                ScanForFish(arg)
             end
         end)
     end
 end
+
 
 ShowPage("Info")
