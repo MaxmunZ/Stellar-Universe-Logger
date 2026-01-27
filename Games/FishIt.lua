@@ -1,66 +1,75 @@
--- Menghapus UI lama jika ada
-if game.CoreGui:FindFirstChild("StellarUI") then game.CoreGui.StellarUI:Destroy() end
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.Name = "StellarUI"
+local Window = Fluent:CreateWindow({
+    Title = "STELLAR SYSTEM | Fish It",
+    SubTitle = "by Luc Aetheryn",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, 
+    Theme = "Amethyst",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
 
--- Main Frame (Menu Utama)
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 400, 0, 250)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35) -- Gelap Elegan
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true -- Bisa digeser!
+local Tabs = {
+    Info = Window:AddTab({ Title = "Info", Icon = "info" }),
+    Fishing = Window:AddTab({ Title = "Fishing", Icon = "fish" }),
+    Auto = Window:AddTab({ Title = "Automatically", Icon = "play-circle" }),
+    Trading = Window:AddTab({ Title = "Trading", Icon = "repeat" }),
+    Quest = Window:AddTab({ Title = "Quest", Icon = "scroll" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin" }),
+    Webhook = Window:AddTab({ Title = "Webhook", Icon = "webhook" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "settings" }),
+    Config = Window:AddTab({ Title = "Config", Icon = "save" })
+}
 
--- Membuat Sudut Membulat (Gaya Chloe/Zenith)
-local Corner = Instance.new("UICorner", MainFrame)
-Corner.CornerRadius = UDim.new(0, 10)
+-- [[ 1. INFO ]]
+Tabs.Info:AddParagraph({ Title = "Owner", Content = "Luc Aetheryn" })
+Tabs.Info:AddParagraph({ Title = "Status", Content = "ONLINE - Stable" })
+Tabs.Info:AddButton({
+    Title = "Copy Discord Link",
+    Callback = function() setclipboard("https://discord.gg/QEhHc6UBHH") end
+})
 
--- Header (Warna Ungu-Magenta kamu)
-local Header = Instance.new("Frame", MainFrame)
-Header.Size = UDim2.new(1, 0, 0, 40)
-Header.BackgroundColor3 = Color3.fromRGB(191, 64, 191) 
-local HeaderCorner = Instance.new("UICorner", Header)
+-- [[ 2. FISHING (Lengkap Sesuai Gambar) ]]
+Tabs.Fishing:AddSection("Fishing Support")
+Tabs.Fishing:AddSection("Fishing Features")
+Tabs.Fishing:AddSection("Instant Features")
+Tabs.Fishing:AddSection("Blatant v1 Features")
+Tabs.Fishing:AddSection("Blatant v2 Features")
+Tabs.Fishing:AddSection("Selling Features")
+Tabs.Fishing:AddSection("Favorite Features")
+Tabs.Fishing:AddSection("Auto Rejoin Features")
 
-local Title = Instance.new("TextLabel", Header)
-Title.Text = "STELLAR SYSTEM | Luc Aetheryn"
-Title.Size = UDim2.new(1, -40, 1, 0)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
+-- [[ 3. AUTOMATICALLY (Lengkap Sesuai Gambar) ]]
+Tabs.Auto:AddSection("Shop Features")
+Tabs.Auto:AddSection("Save Position Features")
+Tabs.Auto:AddSection("Enchant Features")
+Tabs.Auto:AddSection("Totem Features")
+Tabs.Auto:AddSection("Potions Features")
+Tabs.Auto:AddSection("Event Features")
 
--- Tombol Minimize (Ke Logo)
-local MinBtn = Instance.new("TextButton", Header)
-MinBtn.Text = "-"
-MinBtn.Size = UDim2.new(0, 30, 0, 30)
-MinBtn.Position = UDim2.new(1, -35, 0.5, -15)
-MinBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-local MinCorner = Instance.new("UICorner", MinBtn)
+-- [[ 4. TRADING (Lengkap Sesuai Gambar) ]]
+Tabs.Trading:AddSection("Trading Fish Features")
+Tabs.Trading:AddSection("Trading Enchant Stones Features")
+Tabs.Trading:AddSection("Trading Coin Features")
+Tabs.Trading:AddSection("Trading Fish By Rarity")
+Tabs.Trading:AddSection("Auto Accept Features")
 
--- Konten Sederhana (Contoh Tab Quest)
-local Content = Instance.new("TextLabel", MainFrame)
-Content.Text = "Ghostfin Quest & Diamond Quest Ready"
-Content.Position = UDim2.new(0, 0, 0.5, 0)
-Content.Size = UDim2.new(1, 0, 0, 50)
-Content.TextColor3 = Color3.new(0.8, 0.8, 0.8)
-Content.BackgroundTransparency = 1
+-- [[ 5. QUEST (Lengkap Sesuai Gambar) ]]
+Tabs.Quest:AddSection("Artifact Lever Location")
+Tabs.Quest:AddButton({Title = "Ghostfin Quest", Callback = function() end})
+Tabs.Quest:AddSection("Element Quest")
+Tabs.Quest:AddButton({Title = "Diamond Quest", Callback = function() end})
+Tabs.Quest:AddSection("Crystalline Passage Features")
 
--- Fungsi Minimize ke Logo
-local MiniLogo = Instance.new("ImageButton", ScreenGui)
-MiniLogo.Size = UDim2.new(0, 50, 0, 50)
-MiniLogo.Position = UDim2.new(0, 10, 0.5, 0)
-MiniLogo.Image = "rbxassetid://1000304092" -- Logo Stellar kamu
-MiniLogo.Visible = false
-MiniLogo.Draggable = true
+-- [[ 6. TELEPORT (Lengkap Sesuai Gambar) ]]
+Tabs.Teleport:AddSection("Teleport To Player")
+Tabs.Teleport:AddSection("Location")
 
-MinBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-    MiniLogo.Visible = true
-end)
+-- [[ 7. WEBHOOK, MISC, CONFIG ]]
+Tabs.Webhook:AddSection("Webhook Settings")
+Tabs.Misc:AddSection("Misc Features")
+Tabs.Config:AddSection("Configuration")
 
-MiniLogo.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
-    MiniLogo.Visible = false
-end)
+Window:SelectTab(1)
+Fluent:Notify({ Title = "STELLAR SYSTEM", Content = "All Sections Loaded!", Duration = 5 })
