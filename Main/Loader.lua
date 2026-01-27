@@ -1,15 +1,7 @@
--- Pastikan Library Orion terpanggil dengan benar
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Stellar System | v1.2", HidePremium = false, SaveConfig = true, ConfigFolder = "StellarConfig"})
 
--- Membuat Jendela Menu (Sama seperti tampilan Chloe X)
-local Window = OrionLib:MakeWindow({
-    Name = "Stellar System | v1.2", 
-    HidePremium = false, 
-    SaveConfig = true, 
-    ConfigFolder = "StellarConfig"
-})
-
--- Panggil Logika dari folder Games (Ini baris ke-12 yang tadi bermasalah)
+-- Panggil Logika dari folder Games
 local FishLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua"))()
 
 -- [[ TAB INFO ]]
@@ -23,7 +15,7 @@ TabInfo:AddButton({
     end    
 })
 
--- [[ TAB WEBHOOK (Fitur Utama ala Chloe X) ]]
+-- [[ TAB WEBHOOK ]]
 local TabWeb = Window:MakeTab({Name = "Webhook", Icon = "rbxassetid://4483345998"})
 TabWeb:AddTextbox({
     Name = "Webhook Fish Caught",
@@ -34,6 +26,21 @@ TabWeb:AddTextbox({
     end	
 })
 
+-- [[ TAB FISHING ]]
+local TabFish = Window:MakeTab({Name = "Fishing", Icon = "rbxassetid://4483345998"})
+TabFish:AddToggle({
+    Name = "Auto Fishing",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            FishLogic:StartAutoFarm()
+        else
+            FishLogic:StopAutoFarm()
+        end
+    end    
+})
+
+OrionLib:Init()
 -- [[ TAB FISHING ]]
 local TabFish = Window:MakeTab({Name = "Fishing", Icon = "rbxassetid://4483345998"})
 TabFish:AddToggle({
