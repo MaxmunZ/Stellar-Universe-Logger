@@ -6,22 +6,18 @@ local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 
--- Fungsi Download Asset dari GitHub khusus Delta/Mobile
+-- Fungsi khusus untuk menangani Gambar dari GitHub di Delta
 local function GetStellarAsset(fileName, url)
     if not isfile(fileName) then
         local success, result = pcall(function() return game:HttpGet(url) end)
-        if success then 
-            writefile(fileName, result) 
-        else
-            return "rbxassetid://13543168532" -- Fallback jika link mati
-        end
+        if success then writefile(fileName, result) end
     end
     return getcustomasset(fileName)
 end
 
--- Link Baru dari GitHub kamu
-local LogoStellar = GetStellarAsset("StellarLogo_v2.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Stellar%20System.png.jpg")
-local LogoDiscord = GetStellarAsset("DiscordLogo_v2.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Discord.png")
+-- Asset Logo (Link Baru)
+local LogoStellar = GetStellarAsset("StellarLogo_v3.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Stellar%20System.png.jpg")
+local LogoDiscord = GetStellarAsset("DiscordLogo_v3.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Discord.png")
 
 -- Membersihkan UI lama
 if CoreGui:FindFirstChild("StellarFinal") then CoreGui.StellarFinal:Destroy() end
@@ -40,13 +36,7 @@ FloatBtn.Image = LogoStellar
 FloatBtn.Visible = false
 FloatBtn.Active = true
 FloatBtn.Draggable = true
-
-local FloatCorner = Instance.new("UICorner", FloatBtn)
-FloatCorner.CornerRadius = UDim.new(1, 0)
-
-local FloatStroke = Instance.new("UIStroke", FloatBtn)
-FloatStroke.Color = Color3.fromRGB(255, 50, 150)
-FloatStroke.Thickness = 2
+Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
 
 -- [[ FRAME UTAMA ]]
 local Main = Instance.new("Frame", ScreenGui)
@@ -58,7 +48,7 @@ Main.Active = true
 Main.Draggable = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
 
--- [[ CONTROL BUTTONS ]]
+-- [[ CONTROL BUTTONS (X & -) ]]
 local Controls = Instance.new("Frame", Main)
 Controls.Size = UDim2.new(0, 80, 0, 40)
 Controls.Position = UDim2.new(1, -85, 0, 0)
@@ -82,19 +72,9 @@ MiniBtn.TextColor3 = Color3.new(1, 1, 1)
 MiniBtn.TextSize = 25
 MiniBtn.Font = Enum.Font.GothamBold
 
-MiniBtn.MouseButton1Click:Connect(function()
-    Main.Visible = false
-    FloatBtn.Visible = true
-end)
-
-FloatBtn.MouseButton1Click:Connect(function()
-    Main.Visible = true
-    FloatBtn.Visible = false
-end)
-
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
+MiniBtn.MouseButton1Click:Connect(function() Main.Visible = false; FloatBtn.Visible = true end)
+FloatBtn.MouseButton1Click:Connect(function() Main.Visible = true; FloatBtn.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 -- [[ HEADER ]]
 local Header = Instance.new("Frame", Main)
@@ -106,6 +86,7 @@ TitleLogo.Size = UDim2.fromOffset(20, 20)
 TitleLogo.Position = UDim2.new(0, 12, 0.5, -10)
 TitleLogo.Image = LogoStellar
 TitleLogo.BackgroundTransparency = 1
+TitleLogo.ScaleType = Enum.ScaleType.Fit -- AGAR TIDAK GEPENG
 
 local Title = Instance.new("TextLabel", Header)
 Title.Text = "Stellar System | Fish It"
@@ -126,6 +107,7 @@ Sidebar.BackgroundTransparency = 1
 local UIList = Instance.new("UIListLayout", Sidebar)
 UIList.Padding = UDim.new(0, 6)
 
+-- Urutan Sesuai Referensi Gambar
 local tabs = {"Info", "Fishing", "Automatically", "Menu", "Quest", "Webhook", "Config"}
 for _, name in pairs(tabs) do
     local B = Instance.new("TextButton", Sidebar)
@@ -155,7 +137,7 @@ HubTitle.TextSize = 18
 HubTitle.TextColor3 = Color3.new(1, 1, 1)
 HubTitle.BackgroundTransparency = 1
 
--- [[ INFO ROW ALIGNMENT ]]
+-- [[ INFO ROW (ALIGNMENT PREISI) ]]
 local function AddInfoRow(label, value, y)
     local F = Instance.new("Frame", Content)
     F.BackgroundTransparency = 1
@@ -192,38 +174,43 @@ Line.BorderSizePixel = 0
 local G = Instance.new("UIGradient", Line)
 G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
 
--- [[ DISCORD SECTION ]]
+-- [[ DISCORD BOX (FIXED SCALE & TEXT) ]]
 local DBox = Instance.new("Frame", Content)
 DBox.Position = UDim2.new(0.05, 0, 0.58, 0)
-DBox.Size = UDim2.new(0.9, 0, 0, 55)
+DBox.Size = UDim2.new(0.9, 0, 0, 60)
 DBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 Instance.new("UICorner", DBox).CornerRadius = UDim.new(0, 4)
 
 local DIcon = Instance.new("ImageLabel", DBox)
-DIcon.Size = UDim2.fromOffset(30, 30)
-DIcon.Position = UDim2.new(0, 12, 0.5, -15)
+DIcon.Size = UDim2.fromOffset(40, 40) -- Ukuran diperbesar
+DIcon.Position = UDim2.new(0, 10, 0.5, -20)
 DIcon.Image = LogoDiscord
 DIcon.BackgroundTransparency = 1
+DIcon.ScaleType = Enum.ScaleType.Fit -- FIX: AGAR TIDAK GEPENG
 
 local DName = Instance.new("TextLabel", DBox)
 DName.Text = "Stellar Discord"
-DName.Position = UDim2.new(0, 52, 0.2, 0)
+DName.Position = UDim2.new(0, 60, 0.2, 0) -- Jarak disesuaikan
+DName.Size = UDim2.new(1, -70, 0.4, 0)
 DName.Font = Enum.Font.GothamBold
+DName.TextSize = 16 -- FIX: LEBIH BESAR DARI SUBTEXT
 DName.TextColor3 = Color3.new(1, 1, 1)
 DName.TextXAlignment = Enum.TextXAlignment.Left
 DName.BackgroundTransparency = 1
 
 local DSub = Instance.new("TextLabel", DBox)
 DSub.Text = "Official Link Discord Server"
-DSub.Position = UDim2.new(0, 52, 0.5, 0)
+DSub.Position = UDim2.new(0, 60, 0.5, 0)
+DSub.Size = UDim2.new(1, -70, 0.4, 0)
 DSub.Font = Enum.Font.Gotham
-DSub.TextSize = 12
+DSub.TextSize = 12 -- FIX: LEBIH KECIL
 DSub.TextColor3 = Color3.fromRGB(200, 200, 200)
 DSub.TextXAlignment = Enum.TextXAlignment.Left
 DSub.BackgroundTransparency = 1
 
+-- COPY BUTTON
 local CopyBtn = Instance.new("TextButton", Content)
-CopyBtn.Position = UDim2.new(0.05, 0, 0.8, 0)
+CopyBtn.Position = UDim2.new(0.05, 0, 0.82, 0)
 CopyBtn.Size = UDim2.new(0.9, 0, 0, 32)
 CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 CopyBtn.Text = "Copy Link Discord"
