@@ -299,27 +299,30 @@ local function SendFishNotification(fishName, fishTier, fishPrice, fishZone, fis
     end)
 end
 
--- [[ 7. GAME EVENT DETECTOR ]]
+-- [[ 7. GAME EVENT DETECTOR - SAFE MODE ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
 
 if Remotes then
-    -- Mencari event tertangkapnya ikan di game Fish It
-    local CatchEvent = Remotes:FindFirstChild("FishCaught") or Remotes:FindFirstChild("CatchFish")
+    -- Mencoba beberapa kemungkinan nama RemoteEvent di game Fish It
+    local CatchEvent = Remotes:FindFirstChild("FishCaught") or Remotes:FindFirstChild("CatchFish") or Remotes:FindFirstChild("CompleteMinigame")
     
     if CatchEvent then
-        CatchEvent.OnClientEvent:Connect(function(fishData)
-            -- Mengambil data detail dari game
-            local name = fishData.Name or "Unknown"
-            local tier = fishData.Tier or "Common"
-            local price = fishData.Price or "0"
+        CatchEvent.OnClientEvent:Connect(function(data1, data2)
+            -- Beberapa game mengirim data langsung, beberapa mengirim dalam Table
+            local fishData = (type(data1) == "table") and data1 or (type(data2) == "table" and data2) or {}
+            
+            local name = fishData.Name or fishData.FishName or data1 or "Unknown"
+            local tier = fishData.Tier or fishData.Rarity or data2 or "Common"
+            local price = fishData.Price or fishData.Value or "0"
             local zone = fishData.Zone or "Main Ocean"
             
-            -- Mengubah ID Gambar Roblox menjadi Link URL agar muncul di Discord
-            local imageId = fishData.Image or ""
-            local imageUrl = "https://www.roblox.com/asset-thumbnail/image?assetId=" .. imageId:gsub("%D", "") .. "&width=420&height=420&format=png"
+            local imageId = fishData.Image or fishData.Icon or ""
+            local imageUrl = "https://www.roblox.com/asset-thumbnail/image?assetId=" .. tostring(imageId):gsub("%D", "") .. "&width=420&height=420&format=png"
 
-            -- Memanggil fungsi pengirim yang sudah kamu buat tadi
+            -- Print di Console (F9) untuk memantau jika ada ikan masuk
+            print("Stellar Catch: " .. name .. " | " .. tier)
+            
             SendFishNotification(name, tier, price, zone, imageUrl)
         end)
     end
