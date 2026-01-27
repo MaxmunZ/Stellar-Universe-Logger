@@ -251,40 +251,36 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
 end
 
 -- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
-local function SendFishNotification(fishName, fishTier, fishPrice, fishZone, fishImage)
-    -- CEK APAKAH TOGGLE MENYALA
+local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
     if not _G.WebhookEnabled then return end
-
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- FILTER TIER (Pastikan kamu sudah pilih Common/Rare di UI Tier Filter)
+    -- Filter Tier
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter ~= "Select Options" and not currentFilter:find(fishTier) then 
-        return 
-    end
+    if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
 
-    -- Menentukan warna embed berdasarkan Tier
-    local embedColor = 16777215 -- Putih (Default)
-    if fishTier == "Legendary" then embedColor = 16761095 -- Emas
-    elseif fishTier == "Mythic" then embedColor = 11342935 -- Ungu
-    elseif fishTier == "Secret" then embedColor = 16711820 -- Pink/Merah
+    local embedColor = 16777215
+    if rarity == "Legendary" then embedColor = 16761095
+    elseif rarity == "Mythic" then embedColor = 11342935
+    elseif rarity == "Secret" then embedColor = 16711820 
     end
 
     local data = {
-        ["content"] = DiscordID.Text ~= "" and "🎣 **NEW RARE CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW RARE CATCH!**",
+        ["content"] = DiscordID.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
-            ["title"] = "⭐ Stellar System | Rare Catch!",
-            ["description"] = "A magnificent fish has been caught in **Fish It**!",
+            ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
             ["color"] = embedColor,
-            ["thumbnail"] = {["url"] = fishImage or "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"},
             ["fields"] = {
-                {["name"] = "🐟 Fish Name", ["value"] = "```" .. fishName .. "```", ["inline"] = true},
-                {["name"] = "💎 Tier", ["value"] = "```" .. fishTier .. "```", ["inline"] = true},
-                {["name"] = "💰 Value", ["value"] = "```$" .. (fishPrice or "0") .. "```", ["inline"] = true},
-                {["name"] = "📍 Zone", ["value"] = "```" .. (fishZone or "Unknown") .. "```", ["inline"] = false}
+                {["name"] = "👤 Player", ["value"] = "```" .. user .. "```", ["inline"] = true},
+                {["name"] = "🐟 Fish", ["value"] = "```" .. name .. "```", ["inline"] = true},
+                {["name"] = "✨ Mutation", ["value"] = "```" .. mutation .. "```", ["inline"] = true},
+                {["name"] = "💎 Rarity", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
+                {["name"] = "⚖️ Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
+                {["name"] = "💰 Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
+                {["name"] = "📍 Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
             },
-            ["footer"] = {["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"},
+            ["footer"] = {["text"] = "Stellar System • Luc Aetheryn"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -301,35 +297,36 @@ end
 
 -- [[ 7. UNIVERSAL GAME DETECTOR (REMOTE SPY MODE) ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Fungsi untuk membongkar data apa pun yang dikirim game
-local function HandleIncomingData(...)
-    local args = {...}
-    local name, tier, price = "Unknown", "Common", "0"
+local function HandleFishData(data)
+    if type(data) ~= "table" then return end
 
-    -- Mencari data di dalam arguments yang dikirim game
-    for _, v in pairs(args) do
-        if type(v) == "table" then
-            name = v.Name or v.FishName or name
-            tier = v.Tier or v.Rarity or tier
-            price = v.Price or v.Value or price
-        elseif type(v) == "string" and #v > 3 then
-            name = v
-        end
-    end
+    -- Mengambil data spesifik dari table game
+    local name = data.Name or data.FishName or "Unknown"
+    local rarity = data.Rarity or data.Tier or "Common"
+    local price = data.Price or data.Value or data.SellValue or "0"
+    local weight = data.Weight or data.Lbs or "N/A"
+    local mutation = data.Mutation or data.Variant or "None"
+    local zone = data.Zone or data.Location or "Unknown Zone"
+    
+    -- Mengambil Username pembawa keberuntungan
+    local username = LocalPlayer.Name
 
-    print("⭐ STELLAR SPY: Terdeteksi ikan [" .. name .. "] dengan Tier [" .. tier .. "]")
-    SendFishNotification(name, tier, tostring(price), "Dynamic Zone", "")
+    -- Kirim ke fungsi Webhook yang sudah di-upgrade
+    SendFishNotification(name, rarity, price, zone, "", mutation, weight, username)
 end
 
--- Mencari semua RemoteEvent di ReplicatedStorage secara otomatis
+-- Listener otomatis untuk RemoteEvent game
 for _, v in pairs(ReplicatedStorage:GetDescendants()) do
     if v:IsA("RemoteEvent") then
         v.OnClientEvent:Connect(function(...)
-            -- Kita hanya memproses jika nama remotenya berhubungan dengan 'Fish', 'Catch', atau 'Reward'
-            local n = v.Name:lower()
-            if n:find("fish") or n:find("catch") or n:find("reward") or n:find("complete") then
-                HandleIncomingData(...)
+            local args = {...}
+            for _, arg in pairs(args) do
+                if type(arg) == "table" and (arg.Name or arg.FishName) then
+                    HandleFishData(arg)
+                end
             end
         end)
     end
