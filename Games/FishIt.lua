@@ -96,8 +96,26 @@ SecAutoAccept:NewToggle("Auto Accept Trade", "Otomatis menerima permintaan trade
     print("Auto Accept:", state)
 end)
 
+-- [[ TAB QUEST - STELLAR SYSTEM EXCLUSIVE ]]
+local Tab5 = Window:NewTab("Quest")
+
+-- Struktur Section 
+local SecArtifact = Tab5:NewSection("Artifact Lever Location")
+local SecGhostfin = Tab5:NewSection("Ghostfin Quest") 
+local SecElement = Tab5:NewSection("Element Quest")
+local SecDiamond = Tab5:NewSection("Diamond Quest")
+local SecCrystalline = Tab5:NewSection("Crystalline Passage Features")
+
+-- Contoh pengisian fitur (Bisa dikembangkan nanti)
+SecArtifact:NewButton("Teleport to Lever", "Pergi ke lokasi tuas artifak", function()
+    print("Teleporting to Artifact Lever...")
+end)
+
+SecGhostfin:NewToggle("Auto Ghostfin", "Otomatis menyelesaikan quest Ghostfin", function(state)
+    print("Ghostfin Quest:", state)
+end)
+
 
 
 -- Sidebar Tabs (Struktur Mandiri Stellar System)
-local Tab5 = Window:NewTab("Quest")
 local Tab6 = Window:NewTab("Menu")
