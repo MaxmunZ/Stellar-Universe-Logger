@@ -53,8 +53,33 @@ local SecSelling = Tab2:NewSection("Selling Features")
 local SecFavorite = Tab2:NewSection("Favorite Features")
 local SecRejoin = Tab2:NewSection("Auto Rejoin Features")
 
--- Sidebar Tabs (Struktur Mandiri Stellar System)
+-- [[ TAB AUTOMATICALLY - STELLAR SYSTEM EXCLUSIVE ]]
 local Tab3 = Window:NewTab("Automatically")
+
+-- Struktur Section
+local SecShop = Tab3:NewSection("Shop Features")
+local SecSavePos = Tab3:NewSection("Save position Features")
+local SecEnchant = Tab3:NewSection("Enchant Features")
+local SecTotem = Tab3:NewSection("Totem Features")
+local SecPotions = Tab3:NewSection("Potions Features")
+local SecEvent = Tab3:NewSection("Event Features")
+
+-- Contoh pengisian fitur (Bisa kembangkan nanti)
+SecShop:NewToggle("Auto Buy Bait", "Otomatis membeli umpan", function(state)
+    print("Auto Buy Bait:", state)
+end)
+
+SecSavePos:NewButton("Save Current Position", "Simpan posisi saat ini", function()
+    print("Position Saved")
+end)
+
+SecEnchant:NewToggle("Auto Enchant", "Otomatis melakukan enchant", function(state)
+    print("Auto Enchant:", state)
+end)
+
+
+
+-- Sidebar Tabs (Struktur Mandiri Stellar System)
 local Tab4 = Window:NewTab("Trading")
 local Tab5 = Window:NewTab("Quest")
 local Tab6 = Window:NewTab("Menu")
