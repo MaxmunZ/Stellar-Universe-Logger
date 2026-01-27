@@ -175,4 +175,58 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
+-- [[ 6. FISHING LOGIC & WEBHOOK SENDER ]]
+local function SendFishNotification(fishName, fishTier)
+    local url = WebhookURL.Text:gsub("%s+", "")
+    if url == "" or not url:find("discord") then return end
+    
+    -- Filter: Hanya kirim jika ikan adalah Legendary, Mythic, atau Secret
+    local selectedTiers = "Legendary, Mythic, Secret" 
+    if not selectedTiers:find(fishTier) then return end
+
+    local data = {
+        ["content"] = DiscordID.Text ~= "" and "🎣 **Rare Catch!** <@"..DiscordID.Text..">" or "🎣 **Rare Catch!**",
+        ["embeds"] = {{
+            ["title"] = "Stellar System | Fish It!",
+            ["description"] = "Successfully caught a rare fish in **Fish It**!",
+            ["color"] = 41727,
+            ["fields"] = {
+                {["name"] = "Fish Name", ["value"] = fishName, ["inline"] = true},
+                {["name"] = "Tier", ["value"] = fishTier, ["inline"] = true}
+            },
+            ["footer"] = {["text"] = "Stellar System | Developer: Luc Aetheryn"},
+            ["timestamp"] = DateTime.now():ToIsoDate()
+        }}
+    }
+
+    pcall(function()
+        (request or http_request or syn.request)({
+            Url = url,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(data)
+        })
+    end)
+end
+
+-- DETEKSI OTOMATIS UNTUK GAME "FISH IT"
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
+
+if Remotes then
+    -- Event 'FishCaught' adalah yang umum digunakan di Fish It
+    local CatchEvent = Remotes:FindFirstChild("FishCaught") or Remotes:FindFirstChild("CatchFish")
+    
+    if CatchEvent then
+        CatchEvent.OnClientEvent:Connect(function(fishData)
+            -- Fish It biasanya mengirim data dalam bentuk table
+            -- Kita ambil Nama dan Tier-nya
+            local name = fishData.Name or "Unknown"
+            local tier = fishData.Tier or "Common"
+            
+            SendFishNotification(name, tier)
+        end)
+    end
+end
+
 ShowPage("Info")
