@@ -1,46 +1,51 @@
-local RedzLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/RHEZAL-D/Redz-Library/main/Source.lua"))()
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
-local Window = RedzLib:MakeWindow({
-  Name = "STELLAR SYSTEM",
-  SubTitle = "by Luc Aetheryn",
-  SaveConfig = true,
-  ConfigFolder = "StellarFish"
+local Window = Fluent:CreateWindow({
+    Title = "STELLAR SYSTEM",
+    SubTitle = "by Luc Aetheryn",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, -- Efek blur transparan seperti Chloe X
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl -- Kamu bisa ganti ini
 })
 
--- MENGATUR TEMA WARNA (Ungu-Magenta)
-Window:ChangeColor(Color3.fromRGB(191, 64, 191)) 
-
--- MENAMBAHKAN TOMBOL MINIMIZE KE LOGO STELLAR
-Window:AddMinimizeButton({
-  Button = { Image = "rbxassetid://1000304092", BackgroundColor3 = Color3.fromRGB(30, 30, 45) },
-  Corner = { CornerRadius = UDim.new(0, 10) }
-})
+-- MENGATUR WARNA AKSEN (Ungu-Magenta)
+Fluent:SetTheme("Amethyst") 
 
 -- [[ TAB INFO ]]
-local Tab1 = Window:MakeTab({"Info", "info"})
-Tab1:AddSection("Information")
-Tab1:AddParagraph("Owner: Luc Aetheryn")
-Tab1:AddParagraph("Status: Online")
+local Tabs = {
+    Info = Window:AddTab({ Title = "Info", Icon = "info" }),
+    Fishing = Window:AddTab({ Title = "Fishing", Icon = "fish" }),
+    Auto = Window:AddTab({ Title = "Automatically", Icon = "play" }),
+    Quest = Window:AddTab({ Title = "Quest", Icon = "scroll" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin" })
+}
 
--- [[ TAB FISHING ]]
-local Tab2 = Window:MakeTab({"Fishing", "fish"})
-Tab2:AddSection("Fishing Support")
-Tab2:AddSection("Fishing Features")
+Tabs.Info:AddParagraph({
+    Title = "Owner: Luc Aetheryn",
+    Content = "Status: Online & Stable"
+})
 
--- [[ TAB AUTOMATICALLY ]]
-local Tab3 = Window:MakeTab({"Automatically", "play"})
-Tab3:AddSection("Automation Features")
+-- [[ TAB QUEST ]] (Sesuai Permintaan)
+Tabs.Quest:AddSection("Quest Progress")
+Tabs.Quest:AddButton({
+    Title = "Ghostfin Quest",
+    Description = "Start Ghostfin Questline",
+    Callback = function() end
+})
+Tabs.Quest:AddButton({
+    Title = "Diamond Quest",
+    Description = "Start Diamond Questline",
+    Callback = function() end
+})
 
--- [[ TAB TRADING ]]
-local Tab4 = Window:MakeTab({"Trading", "repeat"})
-Tab4:AddSection("Trading Features")
+-- TOMBOL MINIMIZE KHUSUS (Floating Logo)
+-- Fluent secara default memiliki tombol minimize kecil di pojok layar
 
--- [[ TAB QUEST ]]
-local Tab5 = Window:MakeTab({"Quest", "scroll"})
-Tab5:AddSection("Quest Progress")
-Tab5:AddButton({"Ghostfin Quest", function() end}) -- Sesuai Permintaan
-Tab5:AddButton({"Diamond Quest", function() end}) -- Sesuai Permintaan
-
--- [[ TAB TELEPORT ]]
-local Tab6 = Window:MakeTab({"Teleport", "map-pin"})
-Tab6:AddSection("Teleport Location")
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Stellar System",
+    Content = "Welcome back, Luc Aetheryn",
+    Duration = 5
+})
