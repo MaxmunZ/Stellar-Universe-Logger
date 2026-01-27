@@ -250,34 +250,29 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. UPGRADED WEBHOOK EMBED - FINAL FIX ]]
-local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
-    -- Pastikan Toggle ON
+-- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
+local function SendFishNotification(name, rarity, price, zone, mutation, weight, user)
+    -- CEK TOGGLE: Jika OFF, jangan kirim apapun
     if _G.WebhookEnabled ~= true then return end
-    
+
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Filter Tier (Dibuat Case-Insensitive)
-    local currentFilter = _G.TierBtn and _G.TierBtn.Text or "Select Options"
-    if currentFilter ~= "Select Options" then
-        -- Cek apakah rarity ikan ada di dalam teks tombol (contoh: "Rare" ada di "Common, Rare")
-        if not string.find(currentFilter:lower(), rarity:lower()) then 
-            return 
-        end
-    end
+    -- Filter Tier
+    local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
+    if currentFilter ~= "Select Options" and not currentFilter:find(rarity) then return end
 
-    local embedColor = 16777215
-    local r = rarity:lower()
-    if r:find("legendary") then embedColor = 16761095
-    elseif r:find("mythic") then embedColor = 11342935
-    elseif r:find("secret") then embedColor = 16711820 
+    -- Warna Embed Berdasarkan Rarity
+    local embedColor = 16777215 -- White
+    if rarity:find("Legendary") then embedColor = 16761095 -- Gold
+    elseif rarity:find("Mythic") then embedColor = 11342935 -- Purple
+    elseif rarity:find("Secret") then embedColor = 16711820 -- Pink
     end
 
     local data = {
         ["content"] = DiscordID.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
-            ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
+            ["title"] = "⭐ Stellar System | Catch Log",
             ["color"] = embedColor,
             ["fields"] = {
                 {["name"] = "👤 Player", ["value"] = "```" .. user .. "```", ["inline"] = true},
@@ -303,36 +298,33 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. UNIVERSAL DETECTOR - DEEP SCAN ]]
-local function ScanForFish(tab)
-    if type(tab) ~= "table" then return end
+-- [[ 7. UNIVERSAL GAME DETECTOR (REMOTE SPY MODE) ]]
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+local function ProcessFish(data)
+    if type(data) ~= "table" then return end
     
-    -- Mencari data di dalam tabel secara mendalam
-    if tab.Name or tab.FishName or tab.Rarity or tab.Tier then
-        local n = tab.Name or tab.FishName or "Unknown"
-        local r = tab.Rarity or tab.Tier or "Common"
-        local p = tab.Price or tab.Value or "0"
-        local w = tab.Weight or tab.Lbs or (tab.Amount and tostring(tab.Amount).." lbs") or "N/A"
-        local m = tab.Mutation or tab.Variant or "None"
-        local z = tab.Zone or tab.Location or "Ocean"
-        
-        SendFishNotification(n, r, p, z, "", m, w, game.Players.LocalPlayer.Name)
-        return true
-    end
+    -- Mengambil data asli dari struktur game Fish It
+    local name = data.Name or data.FishName or "Unknown"
+    local rarity = data.Rarity or data.Tier or "Common"
+    local price = data.Price or data.Value or data.SellValue or "0"
+    local weight = data.Weight or data.Lbs or (data.Amount and tostring(data.Amount).." lbs") or "N/A"
+    local mutation = data.Mutation or data.Variant or "Clean"
+    local zone = data.Zone or data.Location or "Ocean"
     
-    -- Jika tabel punya isi tabel lagi, bongkar terus
-    for _, v in pairs(tab) do
-        if type(v) == "table" then ScanForFish(v) end
-    end
+    SendFishNotification(name, rarity, price, zone, mutation, weight, LocalPlayer.Name)
 end
 
--- Pantau SEMUA RemoteEvent di seluruh game
-for _, v in pairs(game:GetDescendants()) do
-    if v:IsA("RemoteEvent") then
+-- Listener untuk menangkap event pancing
+for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+    if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
         v.OnClientEvent:Connect(function(...)
             local args = {...}
             for _, arg in pairs(args) do
-                ScanForFish(arg)
+                if type(arg) == "table" and (arg.Name or arg.Rarity) then
+                    ProcessFish(arg)
+                end
             end
         end)
     end
