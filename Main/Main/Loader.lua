@@ -2,7 +2,7 @@ local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shl
 local Window = OrionLib:MakeWindow({Name = "Stellar System | v1.2", HidePremium = false, SaveConfig = true, ConfigFolder = "Stellar"})
 
 -- Panggil Logika dari Folder Games yang baru Anda buat
-local FishLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/refs/heads/main/Games/FishIt.lua"))()
+local FishLogic = loadstring(game:HttpGet("https://raw.githubusercontent.com/MaxmunZ/Stellar-Universe-Logger/main/Games/FishIt.lua"))()
 
 -- [[ TAB INFO ]]
 local TabInfo = Window:MakeTab({Name = "Info", Icon = "rbxassetid://4483345998"})
