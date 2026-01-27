@@ -4,33 +4,51 @@
 
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
 
--- Fungsi khusus untuk menangani Gambar dari GitHub di Delta
+-- Fungsi Download Asset dari GitHub khusus Delta/Mobile
 local function GetStellarAsset(fileName, url)
     if not isfile(fileName) then
-        local success, result = pcall(function()
-            return game:HttpGet(url)
-        end)
-        if success then
-            writefile(fileName, result)
+        local success, result = pcall(function() return game:HttpGet(url) end)
+        if success then 
+            writefile(fileName, result) 
+        else
+            return "rbxassetid://13543168532" -- Fallback jika link mati
         end
     end
     return getcustomasset(fileName)
 end
 
--- Persiapan Asset Logo
-local LogoStellar = GetStellarAsset("StellarLogo.jpg", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Stellar%20System.png.jpg")
-local LogoDiscord = GetStellarAsset("DiscordLogo.jpg", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Discord.png")
+-- Link Baru dari GitHub kamu
+local LogoStellar = GetStellarAsset("StellarLogo_v2.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Stellar%20System.png.jpg")
+local LogoDiscord = GetStellarAsset("DiscordLogo_v2.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Discord.png")
 
 -- Membersihkan UI lama
-if CoreGui:FindFirstChild("StellarFinal") then 
-    CoreGui.StellarFinal:Destroy() 
-end
+if CoreGui:FindFirstChild("StellarFinal") then CoreGui.StellarFinal:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "StellarFinal"
+ScreenGui.ResetOnSpawn = false
 
--- FRAME UTAMA
+-- [[ FLOATING BUTTON (RESTORE) ]]
+local FloatBtn = Instance.new("ImageButton", ScreenGui)
+FloatBtn.Name = "FloatingButton"
+FloatBtn.Size = UDim2.fromOffset(50, 50)
+FloatBtn.Position = UDim2.new(0.05, 0, 0.2, 0)
+FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+FloatBtn.Image = LogoStellar
+FloatBtn.Visible = false
+FloatBtn.Active = true
+FloatBtn.Draggable = true
+
+local FloatCorner = Instance.new("UICorner", FloatBtn)
+FloatCorner.CornerRadius = UDim.new(1, 0)
+
+local FloatStroke = Instance.new("UIStroke", FloatBtn)
+FloatStroke.Color = Color3.fromRGB(255, 50, 150)
+FloatStroke.Thickness = 2
+
+-- [[ FRAME UTAMA ]]
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.fromOffset(500, 320)
 Main.Position = UDim2.new(0.5, -250, 0.5, -160)
@@ -40,9 +58,47 @@ Main.Active = true
 Main.Draggable = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
 
--- TOP BAR (Header)
+-- [[ CONTROL BUTTONS ]]
+local Controls = Instance.new("Frame", Main)
+Controls.Size = UDim2.new(0, 80, 0, 40)
+Controls.Position = UDim2.new(1, -85, 0, 0)
+Controls.BackgroundTransparency = 1
+
+local CloseBtn = Instance.new("TextButton", Controls)
+CloseBtn.Size = UDim2.fromOffset(30, 30)
+CloseBtn.Position = UDim2.new(0.5, 0, 0.5, -15)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CloseBtn.TextSize = 25
+CloseBtn.Font = Enum.Font.GothamBold
+
+local MiniBtn = Instance.new("TextButton", Controls)
+MiniBtn.Size = UDim2.fromOffset(30, 30)
+MiniBtn.Position = UDim2.new(0, 0, 0.5, -15)
+MiniBtn.BackgroundTransparency = 1
+MiniBtn.Text = "−"
+MiniBtn.TextColor3 = Color3.new(1, 1, 1)
+MiniBtn.TextSize = 25
+MiniBtn.Font = Enum.Font.GothamBold
+
+MiniBtn.MouseButton1Click:Connect(function()
+    Main.Visible = false
+    FloatBtn.Visible = true
+end)
+
+FloatBtn.MouseButton1Click:Connect(function()
+    Main.Visible = true
+    FloatBtn.Visible = false
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- [[ HEADER ]]
 local Header = Instance.new("Frame", Main)
-Header.Size = UDim2.new(1, 0, 0, 40)
+Header.Size = UDim2.new(1, -90, 0, 40)
 Header.BackgroundTransparency = 1
 
 local TitleLogo = Instance.new("ImageLabel", Header)
@@ -61,7 +117,7 @@ Title.Size = UDim2.new(1, -40, 1, 0)
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
 
--- SIDEBAR (Navigasi Kiri)
+-- [[ SIDEBAR ]]
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Position = UDim2.new(0, 10, 0, 50)
 Sidebar.Size = UDim2.new(0, 150, 1, -60)
@@ -70,7 +126,8 @@ Sidebar.BackgroundTransparency = 1
 local UIList = Instance.new("UIListLayout", Sidebar)
 UIList.Padding = UDim.new(0, 6)
 
-local function CreateTabBtn(name)
+local tabs = {"Info", "Fishing", "Automatically", "Menu", "Quest", "Webhook", "Config"}
+for _, name in pairs(tabs) do
     local B = Instance.new("TextButton", Sidebar)
     B.Size = UDim2.new(1, 0, 0, 32)
     B.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
@@ -79,16 +136,11 @@ local function CreateTabBtn(name)
     B.Font = Enum.Font.Gotham
     B.TextSize = 13
     B.TextXAlignment = Enum.TextXAlignment.Left
-    B.BorderSizePixel = 0
     Instance.new("UICorner", B).CornerRadius = UDim.new(0, 4)
     Instance.new("UIPadding", B).PaddingLeft = UDim.new(0, 10)
 end
 
--- Urutan Tab Sesuai Gambar
-local tabs = {"Info", "Fishing", "Automatically", "Menu", "Quest", "Webhook", "Config"}
-for _, t in pairs(tabs) do CreateTabBtn(t) end
-
--- CONTENT AREA (Box Kanan)
+-- [[ CONTENT AREA ]]
 local Content = Instance.new("Frame", Main)
 Content.Position = UDim2.new(0, 170, 0, 50)
 Content.Size = UDim2.new(1, -180, 1, -60)
@@ -103,7 +155,7 @@ HubTitle.TextSize = 18
 HubTitle.TextColor3 = Color3.new(1, 1, 1)
 HubTitle.BackgroundTransparency = 1
 
--- BAGIAN INFO (PERAPIAN TEKS & TITIK DUA)
+-- [[ INFO ROW ALIGNMENT ]]
 local function AddInfoRow(label, value, y)
     local F = Instance.new("Frame", Content)
     F.BackgroundTransparency = 1
@@ -112,9 +164,8 @@ local function AddInfoRow(label, value, y)
     
     local L = Instance.new("TextLabel", F)
     L.Text = label
-    L.Size = UDim2.new(0, 85, 1, 0) -- Mengunci lebar agar ":" sejajar
+    L.Size = UDim2.new(0, 85, 1, 0)
     L.Font = Enum.Font.Gotham
-    L.TextSize = 13
     L.TextColor3 = Color3.fromRGB(220, 220, 220)
     L.TextXAlignment = Enum.TextXAlignment.Left
     L.BackgroundTransparency = 1
@@ -124,7 +175,6 @@ local function AddInfoRow(label, value, y)
     V.Position = UDim2.new(0, 85, 0, 0)
     V.Size = UDim2.new(1, -85, 1, 0)
     V.Font = Enum.Font.Gotham
-    V.TextSize = 13
     V.TextColor3 = Color3.fromRGB(220, 220, 220)
     V.TextXAlignment = Enum.TextXAlignment.Left
     V.BackgroundTransparency = 1
@@ -135,7 +185,6 @@ AddInfoRow("Owner", "Luc Aetheryn", 0.29)
 AddInfoRow("Status", "Undetected", 0.36)
 AddInfoRow("Last Update", "Tuesday, January 27, 2026", 0.43)
 
--- GRADIENT LINE
 local Line = Instance.new("Frame", Content)
 Line.Position = UDim2.new(0.05, 0, 0.52, 0)
 Line.Size = UDim2.new(0.9, 0, 0, 3)
@@ -143,7 +192,7 @@ Line.BorderSizePixel = 0
 local G = Instance.new("UIGradient", Line)
 G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
 
--- DISCORD SECTION
+-- [[ DISCORD SECTION ]]
 local DBox = Instance.new("Frame", Content)
 DBox.Position = UDim2.new(0.05, 0, 0.58, 0)
 DBox.Size = UDim2.new(0.9, 0, 0, 55)
@@ -160,7 +209,6 @@ local DName = Instance.new("TextLabel", DBox)
 DName.Text = "Stellar Discord"
 DName.Position = UDim2.new(0, 52, 0.2, 0)
 DName.Font = Enum.Font.GothamBold
-DName.TextSize = 14
 DName.TextColor3 = Color3.new(1, 1, 1)
 DName.TextXAlignment = Enum.TextXAlignment.Left
 DName.BackgroundTransparency = 1
@@ -168,13 +216,12 @@ DName.BackgroundTransparency = 1
 local DSub = Instance.new("TextLabel", DBox)
 DSub.Text = "Official Link Discord Server"
 DSub.Position = UDim2.new(0, 52, 0.5, 0)
-DSub.Font = Enum.Font.Gotham -- REVISI: NO BOLD
+DSub.Font = Enum.Font.Gotham
 DSub.TextSize = 12
 DSub.TextColor3 = Color3.fromRGB(200, 200, 200)
 DSub.TextXAlignment = Enum.TextXAlignment.Left
 DSub.BackgroundTransparency = 1
 
--- COPY BUTTON
 local CopyBtn = Instance.new("TextButton", Content)
 CopyBtn.Position = UDim2.new(0.05, 0, 0.8, 0)
 CopyBtn.Size = UDim2.new(0.9, 0, 0, 32)
