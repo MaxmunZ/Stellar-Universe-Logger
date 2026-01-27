@@ -185,8 +185,17 @@ local function AddWhToggle(lbl, y)
     local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0.7, 0, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1, 1, 1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
     local BG = Instance.new("TextButton", F); BG.Size = UDim2.fromOffset(45, 22); BG.Position = UDim2.new(1, -45, 0.5, -11); BG.BackgroundColor3 = Color3.fromRGB(45, 45, 55); BG.Text = ""; Instance.new("UICorner", BG).CornerRadius = UDim.new(1, 0)
     local T = Instance.new("Frame", BG); T.Size = UDim2.fromOffset(18, 18); T.Position = UDim2.new(0, 2, 0.5, -9); T.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", T).CornerRadius = UDim.new(1, 0)
-    BG.MouseButton1Click:Connect(function() local s = BG.BackgroundColor3 == Color3.fromRGB(45, 45, 55); BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55); TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play() end)
+    
+    BG.MouseButton1Click:Connect(function() 
+        local s = BG.BackgroundColor3 == Color3.fromRGB(45, 45, 55)
+        BG.BackgroundColor3 = s and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(45, 45, 55)
+        TweenService:Create(T, TweenInfo.new(0.2), {Position = s and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)}):Play()
+        
+        -- SIMPAN STATUS TOGEL
+        if lbl == "Send Fish Webhook" then _G.WebhookEnabled = s end
+    end)
 end
+
 AddWhToggle("Send Fish Webhook", 310)
 
 local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
@@ -243,12 +252,15 @@ end
 
 -- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
 local function SendFishNotification(fishName, fishTier, fishPrice, fishZone, fishImage)
+    -- CEK APAKAH TOGGLE MENYALA
+    if not _G.WebhookEnabled then return end
+
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Filter Tier berdasarkan teks di tombol UI
+    -- FILTER TIER (Pastikan kamu sudah pilih Common/Rare di UI Tier Filter)
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter == "Select Options" or not currentFilter:find(fishTier) then 
+    if currentFilter ~= "Select Options" and not currentFilter:find(fishTier) then 
         return 
     end
 
