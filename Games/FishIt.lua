@@ -123,10 +123,52 @@ local function AddWhToggle(lbl, y)
 end
 AddWhToggle("Send Fish Webhook", 310)
 
-local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
+local TestBtn = Instance.new("TextButton", WebhookPage)
+TestBtn.Size = UDim2.new(0.9, 0, 0, 35)
+TestBtn.Position = UDim2.new(0.05, 0, 0, 355)
+TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+TestBtn.Text = "Tests Webhook Connection"
+TestBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", TestBtn)
+
 TestBtn.MouseButton1Click:Connect(function()
-    local data = {["content"] = "Ding dongggg! Webhook is connected :3", ["embeds"] = {{["image"] = {["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"}, ["color"] = 41727}}}
-    pcall(function() HttpService:PostAsync(WebhookURL.Text, HttpService:JSONEncode(data)) end)
+    local url = WebhookURL.Text -- Mengambil teks dari input box
+    
+    if url == "" or not url:find("discord.com/api/webhooks") then
+        TestBtn.Text = "Invalid Webhook URL!"
+        TestBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+        task.wait(2)
+        TestBtn.Text = "Tests Webhook Connection"
+        TestBtn.TextColor3 = Color3.new(1,1,1)
+        return
+    end
+
+    local data = {
+        ["content"] = "Ding dongggg! <@" .. DiscordID.Text .. ">", -- Mention kamu jika ID diisi
+        ["embeds"] = {{
+            ["title"] = "Stellar System Connection Test",
+            ["description"] = "Webhook is successfully connected to the script!",
+            ["image"] = {["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"},
+            ["color"] = 41727
+        }}
+    }
+
+    local success, err = pcall(function()
+        return HttpService:PostAsync(url, HttpService:JSONEncode(data))
+    end)
+
+    if success then
+        TestBtn.Text = "Successfully Sent!"
+        TestBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        warn("Stellar Error: " .. err) -- Cek di F9 jika gagal
+        TestBtn.Text = "Failed to Send!"
+        TestBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+
+    task.wait(2)
+    TestBtn.Text = "Tests Webhook Connection"
+    TestBtn.TextColor3 = Color3.new(1,1,1)
 end)
 
 -- [[ 5. TAB SYSTEM ]]
