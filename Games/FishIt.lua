@@ -241,28 +241,38 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. FISHING LOGIC & WEBHOOK SENDER ]]
-local function SendFishNotification(fishName, fishTier)
+-- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
+local function SendFishNotification(fishName, fishTier, fishPrice, fishZone, fishImage)
     local url = WebhookURL.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Filter: Hanya kirim jika ikan adalah Legendary, Mythic, atau Secret
+    -- Filter Tier berdasarkan teks di tombol UI
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-if currentFilter == "Select Options" or not currentFilter:find(fishTier) then 
-    return 
-end
+    if currentFilter == "Select Options" or not currentFilter:find(fishTier) then 
+        return 
+    end
+
+    -- Menentukan warna embed berdasarkan Tier
+    local embedColor = 16777215 -- Putih (Default)
+    if fishTier == "Legendary" then embedColor = 16761095 -- Emas
+    elseif fishTier == "Mythic" then embedColor = 11342935 -- Ungu
+    elseif fishTier == "Secret" then embedColor = 16711820 -- Pink/Merah
+    end
 
     local data = {
-        ["content"] = DiscordID.Text ~= "" and "🎣 **Rare Catch!** <@"..DiscordID.Text..">" or "🎣 **Rare Catch!**",
+        ["content"] = DiscordID.Text ~= "" and "🎣 **NEW RARE CATCH!** <@"..DiscordID.Text..">" or "🎣 **NEW RARE CATCH!**",
         ["embeds"] = {{
-            ["title"] = "Stellar System | Fish It!",
-            ["description"] = "Successfully caught a rare fish in **Fish It**!",
-            ["color"] = 41727,
+            ["title"] = "⭐ Stellar System | Rare Catch!",
+            ["description"] = "A magnificent fish has been caught in **Fish It**!",
+            ["color"] = embedColor,
+            ["thumbnail"] = {["url"] = fishImage or "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"},
             ["fields"] = {
-                {["name"] = "Fish Name", ["value"] = fishName, ["inline"] = true},
-                {["name"] = "Tier", ["value"] = fishTier, ["inline"] = true}
+                {["name"] = "🐟 Fish Name", ["value"] = "```" .. fishName .. "```", ["inline"] = true},
+                {["name"] = "💎 Tier", ["value"] = "```" .. fishTier .. "```", ["inline"] = true},
+                {["name"] = "💰 Value", ["value"] = "```$" .. (fishPrice or "0") .. "```", ["inline"] = true},
+                {["name"] = "📍 Zone", ["value"] = "```" .. (fishZone or "Unknown") .. "```", ["inline"] = false}
             },
-            ["footer"] = {["text"] = "Stellar System | Developer: Luc Aetheryn"},
+            ["footer"] = {["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -277,22 +287,28 @@ end
     end)
 end
 
--- DETEKSI OTOMATIS UNTUK GAME "FISH IT"
+-- [[ 7. GAME EVENT DETECTOR ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
 
 if Remotes then
-    -- Event 'FishCaught' adalah yang umum digunakan di Fish It
+    -- Mencari event tertangkapnya ikan di game Fish It
     local CatchEvent = Remotes:FindFirstChild("FishCaught") or Remotes:FindFirstChild("CatchFish")
     
     if CatchEvent then
         CatchEvent.OnClientEvent:Connect(function(fishData)
-            -- Fish It biasanya mengirim data dalam bentuk table
-            -- Kita ambil Nama dan Tier-nya
+            -- Mengambil data detail dari game
             local name = fishData.Name or "Unknown"
             local tier = fishData.Tier or "Common"
+            local price = fishData.Price or "0"
+            local zone = fishData.Zone or "Main Ocean"
             
-            SendFishNotification(name, tier)
+            -- Mengubah ID Gambar Roblox menjadi Link URL agar muncul di Discord
+            local imageId = fishData.Image or ""
+            local imageUrl = "https://www.roblox.com/asset-thumbnail/image?assetId=" .. imageId:gsub("%D", "") .. "&width=420&height=420&format=png"
+
+            -- Memanggil fungsi pengirim yang sudah kamu buat tadi
+            SendFishNotification(name, tier, price, zone, imageUrl)
         end)
     end
 end
