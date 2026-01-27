@@ -6,7 +6,6 @@ local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 
--- Fungsi khusus untuk menangani Gambar dari GitHub di Delta
 local function GetStellarAsset(fileName, url)
     if not isfile(fileName) then
         local success, result = pcall(function() return game:HttpGet(url) end)
@@ -15,11 +14,9 @@ local function GetStellarAsset(fileName, url)
     return getcustomasset(fileName)
 end
 
--- Asset Logo (Link Baru)
 local LogoStellar = GetStellarAsset("StellarLogo_v3.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Stellar%20System.png.jpg")
 local LogoDiscord = GetStellarAsset("DiscordLogo_v3.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/refs/heads/main/Discord.png")
 
--- Membersihkan UI lama
 if CoreGui:FindFirstChild("StellarFinal") then CoreGui.StellarFinal:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
@@ -86,7 +83,7 @@ TitleLogo.Size = UDim2.fromOffset(20, 20)
 TitleLogo.Position = UDim2.new(0, 12, 0.5, -10)
 TitleLogo.Image = LogoStellar
 TitleLogo.BackgroundTransparency = 1
-TitleLogo.ScaleType = Enum.ScaleType.Fit -- AGAR TIDAK GEPENG
+TitleLogo.ScaleType = Enum.ScaleType.Fit
 
 local Title = Instance.new("TextLabel", Header)
 Title.Text = "Stellar System | Fish It"
@@ -107,59 +104,39 @@ Sidebar.BackgroundTransparency = 1
 local UIList = Instance.new("UIListLayout", Sidebar)
 UIList.Padding = UDim.new(0, 6)
 
--- Urutan Sesuai Referensi Gambar
-local tabs = {"Info", "Fishing", "Automatically", "Menu", "Quest", "Webhook", "Config"}
-for _, name in pairs(tabs) do
-    local B = Instance.new("TextButton", Sidebar)
-    B.Size = UDim2.new(1, 0, 0, 32)
-    B.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-    B.Text = "|| " .. name
-    B.TextColor3 = Color3.fromRGB(200, 200, 200)
-    B.Font = Enum.Font.Gotham
-    B.TextSize = 13
-    B.TextXAlignment = Enum.TextXAlignment.Left
-    Instance.new("UICorner", B).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIPadding", B).PaddingLeft = UDim.new(0, 10)
+-- [[ BARU: SISTEM HALAMAN ]]
+local Container = Instance.new("Frame", Main) -- Ini pengganti Content lama agar bisa menampung banyak Page
+Container.Position = UDim2.new(0, 170, 0, 50)
+Container.Size = UDim2.new(1, -180, 1, -60)
+Container.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 6)
+
+local Pages = {}
+local TabButtons = {}
+
+local function CreatePage(name)
+    local Page = Instance.new("Frame", Container)
+    Page.Name = name .. "Page"
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.Visible = false
+    Pages[name] = Page
+    return Page
 end
 
--- [[ CONTENT AREA ]]
-local Content = Instance.new("Frame", Main)
-Content.Position = UDim2.new(0, 170, 0, 50)
-Content.Size = UDim2.new(1, -180, 1, -60)
-Content.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-Instance.new("UICorner", Content).CornerRadius = UDim.new(0, 6)
+-- [[ PAGE 1: INFO (ISI KODE LAMA KAMU DI SINI) ]]
+local InfoPage = CreatePage("Info")
 
-local HubTitle = Instance.new("TextLabel", Content)
+local HubTitle = Instance.new("TextLabel", InfoPage)
 HubTitle.Text = "-- Stellar System Hub --"
 HubTitle.Size = UDim2.new(1, 0, 0, 45)
 HubTitle.Font = Enum.Font.GothamBold
-HubTitle.TextSize = 18
-HubTitle.TextColor3 = Color3.new(1, 1, 1)
-HubTitle.BackgroundTransparency = 1
+HubTitle.TextSize = 18; HubTitle.TextColor3 = Color3.new(1, 1, 1); HubTitle.BackgroundTransparency = 1
 
--- [[ INFO ROW (ALIGNMENT PREISI) ]]
 local function AddInfoRow(label, value, y)
-    local F = Instance.new("Frame", Content)
-    F.BackgroundTransparency = 1
-    F.Size = UDim2.new(0.9, 0, 0, 18)
-    F.Position = UDim2.new(0.05, 0, y, 0)
-    
-    local L = Instance.new("TextLabel", F)
-    L.Text = label
-    L.Size = UDim2.new(0, 85, 1, 0)
-    L.Font = Enum.Font.Gotham
-    L.TextColor3 = Color3.fromRGB(220, 220, 220)
-    L.TextXAlignment = Enum.TextXAlignment.Left
-    L.BackgroundTransparency = 1
-    
-    local V = Instance.new("TextLabel", F)
-    V.Text = ":  " .. value
-    V.Position = UDim2.new(0, 85, 0, 0)
-    V.Size = UDim2.new(1, -85, 1, 0)
-    V.Font = Enum.Font.Gotham
-    V.TextColor3 = Color3.fromRGB(220, 220, 220)
-    V.TextXAlignment = Enum.TextXAlignment.Left
-    V.BackgroundTransparency = 1
+    local F = Instance.new("Frame", InfoPage); F.BackgroundTransparency = 1; F.Size = UDim2.new(0.9, 0, 0, 18); F.Position = UDim2.new(0.05, 0, y, 0)
+    local L = Instance.new("TextLabel", F); L.Text = label; L.Size = UDim2.new(0, 85, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.fromRGB(220, 220, 220); L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    local V = Instance.new("TextLabel", F); V.Text = ":  " .. value; V.Position = UDim2.new(0, 85, 0, 0); V.Size = UDim2.new(1, -85, 1, 0); V.Font = Enum.Font.Gotham; V.TextColor3 = Color3.fromRGB(220, 220, 220); V.TextXAlignment = 0; V.BackgroundTransparency = 1
 end
 
 AddInfoRow("Version", "V1.0.0 [BETA]", 0.22)
@@ -167,60 +144,71 @@ AddInfoRow("Owner", "Luc Aetheryn", 0.29)
 AddInfoRow("Status", "Undetected", 0.36)
 AddInfoRow("Last Update", "Tuesday, January 27, 2026", 0.43)
 
-local Line = Instance.new("Frame", Content)
-Line.Position = UDim2.new(0.05, 0, 0.52, 0)
-Line.Size = UDim2.new(0.9, 0, 0, 3)
-Line.BorderSizePixel = 0
-local G = Instance.new("UIGradient", Line)
-G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
+local Line = Instance.new("Frame", InfoPage)
+Line.Position = UDim2.new(0.05, 0, 0.52, 0); Line.Size = UDim2.new(0.9, 0, 0, 3); Line.BorderSizePixel = 0
+local G = Instance.new("UIGradient", Line); G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
 
--- [[ DISCORD BOX (FIXED SCALE & TEXT) ]]
-local DBox = Instance.new("Frame", Content)
-DBox.Position = UDim2.new(0.05, 0, 0.58, 0)
-DBox.Size = UDim2.new(0.9, 0, 0, 60)
-DBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-Instance.new("UICorner", DBox).CornerRadius = UDim.new(0, 4)
+-- [[ DISCORD BOX AREA ]]
+local DBox = Instance.new("Frame", InfoPage); DBox.Position = UDim2.new(0.05, 0, 0.58, 0); DBox.Size = UDim2.new(0.9, 0, 0, 60); DBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45); Instance.new("UICorner", DBox).CornerRadius = UDim.new(0, 4)
+local DIcon = Instance.new("ImageLabel", DBox); DIcon.Size = UDim2.fromOffset(40, 40); DIcon.Position = UDim2.new(0, 10, 0.5, -20); DIcon.Image = LogoDiscord; DIcon.BackgroundTransparency = 1; DIcon.ScaleType = Enum.ScaleType.Fit
+local DName = Instance.new("TextLabel", DBox); DName.Text = "Stellar Discord"; DName.Position = UDim2.new(0, 60, 0.2, 0); DName.Size = UDim2.new(1, -70, 0.4, 0); DName.Font = Enum.Font.GothamBold; DName.TextSize = 16; DName.TextColor3 = Color3.new(1, 1, 1); DName.TextXAlignment = 0; DName.BackgroundTransparency = 1
+local DSub = Instance.new("TextLabel", DBox); DSub.Text = "Official Link Discord Server"; DSub.Position = UDim2.new(0, 60, 0.5, 0); DSub.Size = UDim2.new(1, -70, 0.4, 0); DSub.Font = Enum.Font.Gotham; DSub.TextSize = 12; DSub.TextColor3 = Color3.fromRGB(200, 200, 200); DSub.TextXAlignment = 0; DSub.BackgroundTransparency = 1
+local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.new(0.05, 0, 0.82, 0); CopyBtn.Size = UDim2.new(0.9, 0, 0, 32); CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); CopyBtn.Text = "Copy Link Discord"; CopyBtn.Font = Enum.Font.Gotham; CopyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", CopyBtn)
+CopyBtn.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/QEhHc6UBHH"); CopyBtn.Text = "Copied!"; task.wait(2); CopyBtn.Text = "Copy Link Discord" end)
 
-local DIcon = Instance.new("ImageLabel", DBox)
-DIcon.Size = UDim2.fromOffset(40, 40) -- Ukuran diperbesar
-DIcon.Position = UDim2.new(0, 10, 0.5, -20)
-DIcon.Image = LogoDiscord
-DIcon.BackgroundTransparency = 1
-DIcon.ScaleType = Enum.ScaleType.Fit -- FIX: AGAR TIDAK GEPENG
+-- [[ BARU: PAGE WEBHOOK (POSISI MANUAL AGAR TIDAK BERANTAKAN) ]]
+local WebhookPage = CreatePage("Webhook")
 
-local DName = Instance.new("TextLabel", DBox)
-DName.Text = "Stellar Discord"
-DName.Position = UDim2.new(0, 60, 0.2, 0) -- Jarak disesuaikan
-DName.Size = UDim2.new(1, -70, 0.4, 0)
-DName.Font = Enum.Font.GothamBold
-DName.TextSize = 16 -- FIX: LEBIH BESAR DARI SUBTEXT
-DName.TextColor3 = Color3.new(1, 1, 1)
-DName.TextXAlignment = Enum.TextXAlignment.Left
-DName.BackgroundTransparency = 1
+local WhTitle = Instance.new("TextLabel", WebhookPage)
+WhTitle.Text = "Webhook"; WhTitle.Size = UDim2.new(1, 0, 0, 40); WhTitle.Position = UDim2.new(0, 0, 0, 5); WhTitle.Font = Enum.Font.GothamBold; WhTitle.TextSize = 22; WhTitle.TextColor3 = Color3.new(1, 1, 1); WhTitle.BackgroundTransparency = 1
 
-local DSub = Instance.new("TextLabel", DBox)
-DSub.Text = "Official Link Discord Server"
-DSub.Position = UDim2.new(0, 60, 0.5, 0)
-DSub.Size = UDim2.new(1, -70, 0.4, 0)
-DSub.Font = Enum.Font.Gotham
-DSub.TextSize = 12 -- FIX: LEBIH KECIL
-DSub.TextColor3 = Color3.fromRGB(200, 200, 200)
-DSub.TextXAlignment = Enum.TextXAlignment.Left
-DSub.BackgroundTransparency = 1
+local WhDrop = Instance.new("TextButton", WebhookPage)
+WhDrop.Size = UDim2.new(0.9, 0, 0, 30); WhDrop.Position = UDim2.new(0.05, 0, 0, 45); WhDrop.BackgroundColor3 = Color3.fromRGB(35, 35, 45); WhDrop.Text = "Webhook Fish Caught"; WhDrop.TextColor3 = Color3.new(1, 1, 1); WhDrop.Font = Enum.Font.Gotham; Instance.new("UICorner", WhDrop)
 
--- COPY BUTTON
-local CopyBtn = Instance.new("TextButton", Content)
-CopyBtn.Position = UDim2.new(0.05, 0, 0.82, 0)
-CopyBtn.Size = UDim2.new(0.9, 0, 0, 32)
-CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-CopyBtn.Text = "Copy Link Discord"
-CopyBtn.Font = Enum.Font.Gotham
-CopyBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", CopyBtn).CornerRadius = UDim.new(0, 4)
+local WhLine = Instance.new("Frame", WebhookPage)
+WhLine.Size = UDim2.new(0.9, 0, 0, 2); WhLine.Position = UDim2.new(0.05, 0, 0, 78); WhLine.BorderSizePixel = 0
+local WhG = Instance.new("UIGradient", WhLine); WhG.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(50, 20, 100))
 
-CopyBtn.MouseButton1Click:Connect(function()
-    setclipboard("https://discord.gg/QEhHc6UBHH")
-    CopyBtn.Text = "Copied!"
-    task.wait(2)
-    CopyBtn.Text = "Copy Link Discord"
-end)
+local function AddInput(label, placeholder, y)
+    local L = Instance.new("TextLabel", WebhookPage); L.Text = label; L.Size = UDim2.new(0.9, 0, 0, 20); L.Position = UDim2.new(0.05, 0, 0, y); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1,1,1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    local I = Instance.new("TextBox", WebhookPage); I.Size = UDim2.new(0.9, 0, 0, 30); I.Position = UDim2.new(0.05, 0, 0, y+22); I.BackgroundColor3 = Color3.fromRGB(30, 30, 40); I.PlaceholderText = placeholder; I.Text = ""; I.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", I)
+end
+AddInput("Input ID Discord", "Input Here", 85)
+AddInput("Webhook URL", "Input Here", 142)
+
+local function AddFilter(label, val, y)
+    local F = Instance.new("Frame", WebhookPage); F.Size = UDim2.new(0.9, 0, 0, 30); F.Position = UDim2.new(0.05, 0, 0, y); F.BackgroundTransparency = 1
+    local L = Instance.new("TextLabel", F); L.Text = label; L.Size = UDim2.new(0.4, 0, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1, 1, 1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    local B = Instance.new("TextButton", F); B.Text = val; B.Position = UDim2.new(0.4, 0, 0, 0); B.Size = UDim2.new(0.6, 0, 1, 0); B.BackgroundColor3 = Color3.fromRGB(35, 35, 45); B.TextColor3 = Color3.fromRGB(200, 200, 200); Instance.new("UICorner", B)
+end
+AddFilter("Tier Filter", "Mythic, Secret", 200)
+
+local TestBtn = Instance.new("TextButton", WebhookPage)
+TestBtn.Size = UDim2.new(0.9, 0, 0, 30); TestBtn.Position = UDim2.new(0.05, 0, 0, 240); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", TestBtn)
+TestBtn.MouseButton1Click:Connect(function() print("Dingg dongg! Webhook is connected") end)
+
+-- [[ BARU: FUNGSI PINDAH TAB ]]
+local function ShowPage(name)
+    for k, v in pairs(Pages) do v.Visible = (k == name) end
+    for k, v in pairs(TabButtons) do
+        if k == name then
+            v.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
+            if not v:FindFirstChild("UIGradient") then local G = Instance.new("UIGradient", v); G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150)) end
+        else
+            v.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+            if v:FindFirstChild("UIGradient") then v.UIGradient:Destroy() end
+        end
+    end
+end
+
+-- [[ UPDATE SIDEBAR ]]
+local tabs = {"Info", "Fishing", "Automatically", "Menu", "Quest", "Webhook", "Config"}
+for _, name in pairs(tabs) do
+    if not Pages[name] then CreatePage(name) end
+    local B = Instance.new("TextButton", Sidebar)
+    B.Size = UDim2.new(1, 0, 0, 32); B.BackgroundColor3 = Color3.fromRGB(35, 35, 45); B.Text = "|| " .. name; B.TextColor3 = Color3.fromRGB(200, 200, 200); B.Font = Enum.Font.Gotham; B.TextSize = 13; B.TextXAlignment = 0; Instance.new("UICorner", B).CornerRadius = UDim.new(0, 4); Instance.new("UIPadding", B).PaddingLeft = UDim.new(0, 10)
+    TabButtons[name] = B
+    B.MouseButton1Click:Connect(function() ShowPage(name) end)
+end
+
+ShowPage("Info") -- Default Page
