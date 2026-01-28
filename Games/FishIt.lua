@@ -298,12 +298,12 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. SMART AUTO-DETECTOR ]]
+-- [[ 7. SMART AUTO-DETECTOR - FINAL REPAIR ]]
 local function AutoHookFish()
     local RS = game:GetService("ReplicatedStorage")
-    
-    -- Mencari Remote yang berhubungan dengan "Catch" secara otomatis
     local CatchRemote = nil
+    
+    -- Mencari Remote secara otomatis
     for _, v in pairs(RS:GetDescendants()) do
         if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
             CatchRemote = v
@@ -316,23 +316,35 @@ local function AutoHookFish()
         
         CatchRemote.OnClientEvent:Connect(function(...)
             local args = {...}
-            local data = args[1] -- Biasanya data ada di argumen pertama
+            if not _G.WebhookEnabled then return end
 
-            if _G.WebhookEnabled and data then
-                -- DEBUG: Melihat struktur asli data di Console F9
-                print("Stellar Data Log:", HttpService:JSONEncode(data))
+            -- Cek apakah argumen pertama adalah Tabel atau data terpisah
+            local d = args[1]
+            local name, rarity, price, zone, weight, mutation
 
-                -- Pemetaan data (Mapping) berdasarkan struktur umum Fish It!
-                local name = data.Name or data.FishName or data.Fish or "Unknown"
-                local rarity = data.Rarity or data.Tier or "Common"
-                local price = data.Price or data.Value or data.SellValue or 0
-                local zone = data.Zone or data.Location or "Unknown"
-                local weight = data.Weight or "0kg"
-                local mutation = data.Mutation or "None"
-
-                -- Jalankan Notifikasi
-                SendFishNotification(name, rarity, price, zone, nil, mutation, weight, LocalPlayer.Name)
+            if type(d) == "table" then
+                -- Jika data berbentuk Tabel
+                name = d.Name or d.FishName or d.Fish or "Unknown"
+                rarity = d.Rarity or d.Tier or "Common"
+                price = d.Price or d.Value or 0
+                zone = d.Zone or d.Location or "Unknown"
+                weight = d.Weight or "0kg"
+                mutation = d.Mutation or "None"
+            else
+                -- Jika data dikirim satu-satu (Argumen terpisah)
+                name = args[1] or "Unknown"
+                rarity = args[2] or "Common"
+                price = args[3] or 0
+                zone = args[4] or "Unknown"
+                weight = args[5] or "0kg"
+                mutation = args[6] or "None"
             end
+
+            -- Validasi agar tidak mengirim data Player sebagai Ikan
+            if tostring(name):find("Players") or tostring(name) == LocalPlayer.Name then return end
+
+            -- Kirim Notifikasi ke Webhook
+            SendFishNotification(tostring(name), tostring(rarity), price, zone, nil, mutation, weight, LocalPlayer.Name)
         end)
     else
         warn("❌ Stellar System: Remote penangkapan tidak ditemukan!")
