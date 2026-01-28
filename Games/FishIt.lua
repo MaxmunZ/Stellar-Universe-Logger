@@ -270,10 +270,10 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
         ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. tostring(rarity) .. " Catch!",
-            ["description"] = "Congratulations!! **" .. tostring(user) .. "** You have obtained a new **" .. tostring(rarity) .. "** fish!",
+            ["description"] = "Congratulations!! You have obtained a new **" .. tostring(rarity) .. "** fish!",
             ["color"] = 16723110, -- Pink Stellar
             ["fields"] = {
-                {["name"] = "〢Fish Name", ["value"] = "```" .. tostring(name) .. "```", ["inline"] = false},
+                {["name"] = "〢Player Name", ["value"] = "```" .. tostring(name) .. "```", ["inline"] = false},
                 {["name"] = "〢Fish Tier", ["value"] = "```" .. tostring(rarity) .. "```", ["inline"] = true},
                 {["name"] = "〢Weight", ["value"] = "```" .. tostring(weight) .. "```", ["inline"] = true},
                 {["name"] = "〢Mutation", ["value"] = "```" .. (mutation ~= "" and tostring(mutation) or "None") .. "```", ["inline"] = true},
@@ -298,12 +298,11 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. SMART AUTO-DETECTOR - FINAL REPAIR ]]
+-- [[ 7. SMART AUTO-DETECTOR - ANTI-HEAD FIX ]]
 local function AutoHookFish()
     local RS = game:GetService("ReplicatedStorage")
     local CatchRemote = nil
     
-    -- Mencari Remote secara otomatis
     for _, v in pairs(RS:GetDescendants()) do
         if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
             CatchRemote = v
@@ -318,36 +317,49 @@ local function AutoHookFish()
             local args = {...}
             if not _G.WebhookEnabled then return end
 
-            -- Cek apakah argumen pertama adalah Tabel atau data terpisah
-            local d = args[1]
             local name, rarity, price, zone, weight, mutation
-
-            if type(d) == "table" then
-                -- Jika data berbentuk Tabel
-                name = d.Name or d.FishName or d.Fish or "Unknown"
-                rarity = d.Rarity or d.Tier or "Common"
-                price = d.Price or d.Value or 0
-                zone = d.Zone or d.Location or "Unknown"
-                weight = d.Weight or "0kg"
-                mutation = d.Mutation or "None"
+            
+            -- Mencari data di dalam tabel (jika game mengirim tabel)
+            local possibleTable = args[1]
+            if type(possibleTable) == "table" then
+                name = possibleTable.Name or possibleTable.Fish or "Unknown"
+                rarity = possibleTable.Rarity or possibleTable.Tier or "Common"
+                price = possibleTable.Price or possibleTable.Value or 0
+                zone = possibleTable.Zone or "Unknown"
+                weight = possibleTable.Weight or "0kg"
+                mutation = possibleTable.Mutation or "None"
             else
-                -- Jika data dikirim satu-satu (Argumen terpisah)
-                name = args[1] or "Unknown"
-                rarity = args[2] or "Common"
+                -- LOGIKA ANTI-HEAD: Kita scan semua argumen untuk mencari Rarity yang valid
+                local validRarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
+                
+                -- Default values
+                name = "Unknown"
+                rarity = "Common"
+                
+                for i, v in ipairs(args) do
+                    local valStr = tostring(v)
+                    -- Jika menemukan salah satu nama Rarity di dalam daftar
+                    if table.find(validRarities, valStr) then
+                        rarity = valStr
+                        -- Biasanya nama ikan ada di argumen SEBELUM Rarity
+                        if args[i-1] and type(args[i-1]) == "string" then
+                            name = args[i-1]
+                        end
+                    end
+                end
+                
+                -- Mengambil data pendukung lainnya dari posisi standar
                 price = args[3] or 0
                 zone = args[4] or "Unknown"
                 weight = args[5] or "0kg"
                 mutation = args[6] or "None"
             end
 
-            -- Validasi agar tidak mengirim data Player sebagai Ikan
-            if tostring(name):find("Players") or tostring(name) == LocalPlayer.Name then return end
+            -- Validasi akhir: Jika rarity masih berisi objek (seperti Head), paksa ke Common
+            if rarity == "Head" or rarity == "Handle" then rarity = "Common" end
 
-            -- Kirim Notifikasi ke Webhook
             SendFishNotification(tostring(name), tostring(rarity), price, zone, nil, mutation, weight, LocalPlayer.Name)
         end)
-    else
-        warn("❌ Stellar System: Remote penangkapan tidak ditemukan!")
     end
 end
 
