@@ -287,13 +287,11 @@ local function SendFishNotification(fishName, rarity, price, zone, img, mutation
     end)
 end
 
--- [[ 7. OPTIMIZED HOOK & FILTER - FINAL VERSION ]]
--- LETAKKAN DI BARIS PALING BAWAH SCRIPT
+-- [[ 7. FINAL OPTIMIZED HOOK - MULTI-TIER FIX ]]
 local function AutoHookFish()
     local RS = game:GetService("ReplicatedStorage")
     local CatchRemote = nil
     
-    -- Mencari Remote secara otomatis
     for _, v in pairs(RS:GetDescendants()) do
         if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
             CatchRemote = v; break
@@ -301,24 +299,23 @@ local function AutoHookFish()
     end
 
     if CatchRemote then
-        print("⭐ Stellar System: Hooking into " .. CatchRemote.Name)
         CatchRemote.OnClientEvent:Connect(function(...)
             local args = {...}
             if not _G.WebhookEnabled then return end
 
-            local playerName = tostring(args[1]) -- Nama Player (Kamu/Orang Lain)
+            local playerName = tostring(args[1])
             local fishName = "Unknown"
             local rarity = "Common"
+            -- Pastikan daftar ini lengkap sesuai yang ada di game
             local validRarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
 
-            -- [[ LOGIKA PENCARIAN DATA YANG LEBIH AKURAT ]]
+            -- 1. Cari Rarity dan Nama Ikan secara dinamis
             for i, v in ipairs(args) do
                 local valStr = tostring(v)
-                -- 1. Cari Rarity (Mythic, Legendary, dll)
                 if table.find(validRarities, valStr) then
-                    rarity = valStr
+                    rarity = valStr -- Menangkap tier yang ditemukan (bukan cuma Common)
                     
-                    -- 2. Cari Nama Ikan (Cek argumen sebelum dan sesudah Rarity)
+                    -- Mencari nama ikan di sekitar posisi Rarity
                     if args[i-1] and type(args[i-1]) == "string" and args[i-1] ~= playerName then
                         fishName = args[i-1]
                     elseif args[i+1] and type(args[i+1]) == "string" and args[i+1] ~= playerName then
@@ -327,23 +324,26 @@ local function AutoHookFish()
                 end
             end
 
-            -- [[ FILTER TIER - MEMASTIKAN MYTHIC LOLOS ]]
-            -- Jika SelectedTiers kosong, kirim SEMUA. Jika tidak, kirim yang dipilih saja.
+            -- 2. Logika Filter Tier (Penyebab hanya Common yang muncul)
+            -- Jika SelectedTiers tidak kosong, cek apakah rarity ikan terpilih
             if #SelectedTiers > 0 then
-                local isAllowed = false
-                for _, t in pairs(SelectedTiers) do
-                    if rarity == t then isAllowed = true break end
+                local isSelected = false
+                for _, selectedTier in pairs(SelectedTiers) do
+                    if rarity == selectedTier then
+                        isSelected = true
+                        break
+                    end
                 end
-                if not isAllowed then return end
+                -- Jika tier ikan (misal Mythic) tidak ada di daftar pilihan, jangan kirim
+                if not isSelected then return end 
             end
 
-            -- [[ PENGIRIMAN DATA ]]
-            -- Urutan Parameter: (fishName, rarity, price, zone, img, mutation, weight, playerName)
+            -- 3. Kirim data ke Bagian 6
             SendFishNotification(
                 tostring(fishName), 
                 tostring(rarity), 
                 args[3] or 0, 
-                args[4] or "Unknown Zone", 
+                args[4] or "Unknown", 
                 nil, 
                 args[6] or "None", 
                 args[5] or "0kg", 
@@ -352,8 +352,6 @@ local function AutoHookFish()
         end)
     end
 end
-
--- Menjalankan sistem di background
 task.spawn(AutoHookFish)
 
 ShowPage("Info")
