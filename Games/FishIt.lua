@@ -214,15 +214,15 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. FIXED NOTIFICATION - FULL STELLAR PINK VERSION ]]
+-- [[ 6. FIXED NOTIFICATION - GUARANTEED PINK VERSION ]]
 local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
     if not _G.WebhookEnabled then return end
     
     local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
 
-    -- Mengunci semua warna menjadi Pink Stellar (16723110)
-    local embedColor = 16723110 
+    -- KUNCI WARNA PINK (16723110 adalah kode desimal untuk Pink Stellar)
+    local finalEmbedColor = 16723110 
 
     local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
     local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
@@ -233,7 +233,7 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
             ["description"] = "Congratulations!! **" .. user .. "** You have obtained a new **" .. rarity .. "** fish!",
-            ["color"] = embedColor, -- Sekarang selalu Pink
+            ["color"] = finalEmbedColor, -- Menggunakan variabel yang sudah dikunci
             ["fields"] = {
                 {["name"] = "〢Fish Name", ["value"] = "```" .. name .. "```", ["inline"] = false},
                 {["name"] = "〢Fish Tier", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
@@ -242,19 +242,25 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
                 {["name"] = "〢Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
                 {["name"] = "〢Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
             },
-            ["footer"] = { ["text"] = "Stellar System", ["icon_url"] = stellarLogo },
+            ["footer"] = { 
+                ["text"] = "Stellar System • Luc Aetheryn", 
+                ["icon_url"] = stellarLogo 
+            },
             ["thumbnail"] = { ["url"] = fishImageUrl }, 
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
     
-    pcall(function()
-        (request or http_request or syn.request)({
-            Url = url, Method = "POST",
+    local success, err = pcall(function()
+        return (request or http_request or syn.request)({
+            Url = url, 
+            Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode(data)
         })
     end)
+    
+    if not success then warn("Webhook Error: " .. tostring(err)) end
 end
 
 ShowPage("Info")
