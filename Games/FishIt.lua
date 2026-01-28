@@ -308,7 +308,7 @@ local function SendFishNotification(fishName, rarity, price, zone, img, mutation
     end)
 end
 
--- [[ 7. SMART DETECTOR - ANTI UNKNOWN VERSION ]]
+-- [[ 7. ULTIMATE DETECTOR - FISH IT! EDITION ]]
 local function AutoHookFish()
     local RS = game:GetService("ReplicatedStorage")
     local CatchRemote = nil
@@ -324,53 +324,65 @@ local function AutoHookFish()
             local args = {...}
             if not _G.WebhookEnabled then return end
 
-            -- Variabel Penampung Data
             local playerName = tostring(args[1])
             local rarity = "Common"
             local fishName = "Unknown Fish"
             local weight = "0kg"
-            local zone = "Unknown Zone"
+            local zone = "Main Ocean"
             local price = 0
             local mutation = "None"
             
             local validRarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
 
-            -- [[ LOOPING PENCARIAN PINTAR ]]
+            -- [[ PENCARIAN DATA AGRESIF ]]
             for i, v in ipairs(args) do
                 local s = tostring(v)
                 
-                -- 1. Cari Rarity
+                -- 1. Deteksi Rarity (Prioritas)
                 if table.find(validRarities, s) then
                     rarity = s
                 
-                -- 2. Cari Berat (Biasanya ada teks "kg" atau "lb")
-                elseif s:find("kg") or s:find("lb") then
+                -- 2. Deteksi Berat (Mencari angka yang ada kg/lb)
+                elseif s:match("%d+%.?%d*kg") or s:match("%d+%.?%d*lb") then
                     weight = s
                 
-                -- 3. Cari Zone (Biasanya mengandung kata "Zone" atau "Ocean" atau "Sea")
-                elseif s:find("Zone") or s:find("Ocean") or s:find("Sea") or s:find("Depth") then
-                    zone = s
-                
-                -- 4. Cari Harga (Jika dia angka dan bukan argumen pertama)
-                elseif type(v) == "number" and i > 1 then
+                -- 3. Deteksi Harga (Mencari angka murni > 2)
+                elseif type(v) == "number" and v > 2 then
                     price = v
                 
-                -- 5. Cari Nama Ikan (String yang bukan rarity, bukan zone, bukan player)
-                elseif type(v) == "string" and i > 1 
-                   and not table.find(validRarities, s) 
-                   and not s:find("kg") and not s:find("Zone") 
-                   and s ~= playerName and s ~= "None" then
-                    fishName = s
+                -- 4. Deteksi Zone (Mencari kata spesifik lokasi)
+                elseif s:find("Zone") or s:find("Sea") or s:find("Ocean") then
+                    zone = s
+
+                -- 5. Deteksi Mutasi
+                elseif s:find("Shiny") or s:find("Albino") or s:find("Giant") then
+                    mutation = s
                 end
             end
 
-            -- [[ FILTER TIER CHECK ]]
+            -- 6. Deteksi Nama Ikan (Cari string yang bukan player/rarity/zone/weight)
+            for i, v in ipairs(args) do
+                local s = tostring(v)
+                if type(v) == "string" and i > 1 
+                   and not table.find(validRarities, s) 
+                   and not s:find("kg") and not s:find("lb") 
+                   and not s:find("Zone") and not s:find("Ocean")
+                   and s ~= playerName and s ~= mutation and #s > 2 then
+                    fishName = s
+                    break
+                end
+            end
+
+            -- [[ FILTER TIER - MENGGUNAKAN LOWERCASE AGAR PASTI COCOK ]]
             if #SelectedTiers > 0 then
                 local isMatch = false
                 for _, t in pairs(SelectedTiers) do
-                    if rarity:lower() == t:lower() then isMatch = true break end
+                    if rarity:lower() == t:lower() then 
+                        isMatch = true 
+                        break 
+                    end
                 end
-                if not isMatch then return end
+                if not isMatch then return end -- Jika tidak cocok, jangan kirim
             end
 
             -- [[ KIRIM KE WEBHOOK ]]
