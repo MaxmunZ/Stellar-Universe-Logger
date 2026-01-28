@@ -204,6 +204,7 @@ AddWhToggle("Send Fish Webhook", 315)
 -- 5. Test Webhook (Logic Re-connected)
 local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 360); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Test Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); TestBtn.Font = Enum.Font.GothamBold; TestBtn.TextSize = 14; Instance.new("UICorner", TestBtn)
 
+-- [[ TEST WEBHOOK LOGIC - FIXED THUMBNAIL ]]
 TestBtn.MouseButton1Click:Connect(function()
     local url = WebhookURLBox.Text:gsub("%s+", "")
     
@@ -215,20 +216,28 @@ TestBtn.MouseButton1Click:Connect(function()
     end
 
     TestBtn.Text = "Sending Test..."
+    -- Link Direct (Pastikan ini direct link ke file gambar)
     local stellarLogo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"
 
     local payload = HttpService:JSONEncode({
         ["embeds"] = {{
             ["title"] = "✅ Connection Test Successful",
-            ["description"] = "Stellar System has been successfully linked!",
-            ["color"] = 16723110,
-            ["footer"] = {["text"] = "Stellar System", ["icon_url"] = stellarLogo},
+            ["description"] = "Stellar System has been successfully linked to your Discord Webhook.",
+            ["color"] = 16723110, -- Pink Stellar
+            -- THUMBNAIL ADALAH GAMBAR DI POJOK KANAN ATAS
+            ["thumbnail"] = {
+                ["url"] = stellarLogo 
+            },
+            ["footer"] = {
+                ["text"] = "Stellar System",
+                ["icon_url"] = stellarLogo
+            },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     })
 
     local success = pcall(function()
-        (request or http_request or syn.request)({
+        return (request or http_request or syn.request)({
             Url = url,
             Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
@@ -236,7 +245,12 @@ TestBtn.MouseButton1Click:Connect(function()
         })
     end)
 
-    TestBtn.Text = success and "Successfully Sent!" or "Failed To Send"
+    if success then
+        TestBtn.Text = "Successfully Sent!"
+    else
+        TestBtn.Text = "Failed To Send"
+    end
+    
     task.wait(2)
     TestBtn.Text = "Test Webhook Connection"
 end)
