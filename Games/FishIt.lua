@@ -40,7 +40,7 @@ CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 local SearchMenu = Instance.new("ImageLabel", Main)
 SearchMenu.Name = "TierSearchMenu"
 SearchMenu.Size = UDim2.new(0, 185, 0, 265) 
-SearchMenu.Position = UDim2.new(0, 305, 0, 45) -- POSISI POJOK KANAN PANEL
+SearchMenu.Position = UDim2.new(0, 305, 0, 45) -- POJOK KANAN
 SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
 SearchMenu.ScaleType = Enum.ScaleType.Stretch
@@ -53,7 +53,6 @@ SStroke.Color = Color3.fromRGB(255, 50, 150)
 SStroke.Thickness = 1.5
 Instance.new("UICorner", SearchMenu)
 
--- Judul & List (Sama seperti sebelumnya tapi ZIndex diperkuat)
 local STitle = Instance.new("TextLabel", SearchMenu)
 STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.new(1, 1, 1); STitle.Font = Enum.Font.GothamMedium; STitle.TextSize = 16; STitle.ZIndex = 1001
 
@@ -68,17 +67,26 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
     local bGrad = Instance.new("UIGradient", b)
     bGrad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 150)), ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 20, 100))})
     bGrad.Enabled = false 
+    
     b.MouseButton1Click:Connect(function()
-        local f = table.find(SelectedTiers, t)
-        if f then table.remove(SelectedTiers, f); bGrad.Enabled = false; b.BackgroundTransparency = 0.7; b.TextColor3 = Color3.fromRGB(200, 200, 200)
-        else table.insert(SelectedTiers, t); bGrad.Enabled = true; b.BackgroundTransparency = 0.1; b.TextColor3 = Color3.new(1, 1, 1) end
+        local idx = table.find(SelectedTiers, t)
+        if idx then 
+            table.remove(SelectedTiers, idx)
+            bGrad.Enabled = false
+            b.BackgroundTransparency = 0.7
+            b.TextColor3 = Color3.fromRGB(200, 200, 200)
+        else 
+            table.insert(SelectedTiers, t)
+            bGrad.Enabled = true
+            b.BackgroundTransparency = 0.1
+            b.TextColor3 = Color3.new(1, 1, 1)
+        end
         if _G.TierBtn then _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") end
     end)
 end
 
 local CloseSearch = Instance.new("TextButton", SearchMenu); CloseSearch.Size = UDim2.new(0.8, 0, 0, 30); CloseSearch.Position = UDim2.new(0.1, 0, 1, -40); CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150); CloseSearch.Text = "DONE"; CloseSearch.Font = Enum.Font.GothamBold; CloseSearch.TextSize = 14; CloseSearch.TextColor3 = Color3.new(1, 1, 1); CloseSearch.ZIndex = 1010; Instance.new("UICorner", CloseSearch)
 CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
-
 
 -- [[ 3. HEADER & SIDEBAR ]]
 local Header = Instance.new("Frame", Main); Header.Size = UDim2.new(1, -90, 0, 40); Header.BackgroundTransparency = 1
