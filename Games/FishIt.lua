@@ -39,34 +39,38 @@ CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 -- [[ 2. SEARCH MENU (INSIDE MAIN RIGHT SIDE) ]] -- TARUH DI BAWAH MAIN
 local SearchMenu = Instance.new("ImageLabel", Main) 
 SearchMenu.Name = "TierSearchMenu"
-SearchMenu.Size = UDim2.new(0, 180, 0, 240)
--- Posisinya diatur agar muncul di area Content (sebelah kanan sidebar)
-SearchMenu.Position = UDim2.new(0, 180, 0, 50) 
+SearchMenu.Size = UDim2.new(0, 185, 0, 260) -- Ukuran disesuaikan agar Secret tidak hilang
+SearchMenu.Position = UDim2.new(0, 305, 0, 45) 
 SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
 SearchMenu.ScaleType = Enum.ScaleType.Stretch
 SearchMenu.Visible = false
-SearchMenu.ZIndex = 100 -- Supaya tidak tertutup elemen Page
+SearchMenu.ZIndex = 200
 
 local SStroke = Instance.new("UIStroke", SearchMenu)
 SStroke.Color = Color3.fromRGB(255, 50, 150)
 SStroke.Thickness = 2
 Instance.new("UICorner", SearchMenu)
 
+-- Judul "Search" (Transparan sesuai gambar)
 local STitle = Instance.new("TextLabel", SearchMenu)
-STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 30); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.fromRGB(200, 200, 200); STitle.Font = Enum.Font.GothamMedium; STitle.ZIndex = 101
+STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.fromRGB(200, 200, 200); STitle.Font = Enum.Font.Gotham; STitle.TextSize = 14; STitle.ZIndex = 201
 
+-- List Pilihan (Background Transparency = 1 agar Logo Stellar terlihat)
 local SList = Instance.new("ScrollingFrame", SearchMenu)
-SList.Size = UDim2.new(1, -10, 1, -70); SList.Position = UDim2.new(0, 5, 0, 35); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0; SList.ZIndex = 101
-Instance.new("UIListLayout", SList).Padding = UDim.new(0, 5)
+SList.Size = UDim2.new(1, -15, 1, -50); SList.Position = UDim2.new(0, 10, 0, 40); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0; SList.CanvasSize = UDim2.new(0,0,0,250); SList.ZIndex = 202
+Instance.new("UIListLayout", SList).Padding = UDim.new(0, 2)
 
+-- Loop Pilihan Tier
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
-    b.Size = UDim2.new(1, 0, 0, 30); b.Text = t; b.BackgroundColor3 = Color3.fromRGB(45, 45, 55); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.ZIndex = 102; Instance.new("UICorner", b)
+    b.Size = UDim2.new(1, -5, 0, 30); b.Text = t; b.BackgroundTransparency = 1; b.TextColor3 = Color3.fromRGB(230, 230, 230); b.Font = Enum.Font.Gotham; b.TextSize = 15; b.TextXAlignment = Enum.TextXAlignment.Left; b.ZIndex = 203
+    
+    -- Efek Hover/Select (Opsional: Memberikan warna pink transparan saat dipilih)
     b.MouseButton1Click:Connect(function()
         if table.find(SelectedTiers, t) then
             for i, v in ipairs(SelectedTiers) do if v == t then table.remove(SelectedTiers, i) end end
-            b.TextColor3 = Color3.fromRGB(200, 200, 200)
+            b.TextColor3 = Color3.fromRGB(230, 230, 230)
         else
             table.insert(SelectedTiers, t)
             b.TextColor3 = Color3.fromRGB(255, 50, 150)
@@ -75,7 +79,8 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
     end)
 end
 
-local CloseSearch = Instance.new("TextButton", SearchMenu); CloseSearch.Size = UDim2.new(0.9, 0, 0, 25); CloseSearch.Position = UDim2.new(0.05, 0, 1, -30); CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150); CloseSearch.Text = "Done"; CloseSearch.TextColor3 = Color3.new(1,1,1); CloseSearch.ZIndex = 105; Instance.new("UICorner", CloseSearch)
+-- Tombol Done yang tidak menutupi background (Transparan)
+local CloseSearch = Instance.new("TextButton", SearchMenu); CloseSearch.Size = UDim2.new(1, 0, 0, 30); CloseSearch.Position = UDim2.new(0, 0, 1, -30); CloseSearch.BackgroundTransparency = 1; CloseSearch.Text = ""; CloseSearch.ZIndex = 205
 CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
 
 -- [[ 3. HEADER & SIDEBAR ]]
