@@ -240,8 +240,8 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. SMART NOTIFICATION - FINAL CLEAN VERSION ]]
-local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
+-- [[ 6. OPTIMIZED NOTIFICATION ]]
+local function SendFishNotification(fishName, rarity, price, zone, img, mutation, weight, playerName)
     if not _G.WebhookEnabled then return end
     
     local url = WebhookURLBox.Text:gsub("%s+", "")
@@ -250,44 +250,30 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
     local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
     
-    -- DATABASE CHECK (Sesuai aset di GitHub kamu)
-    local hasImage = {
-        ["Blob Shark"] = true, ["Cryoshade Glider"] = true, ["Cursed Kraken"] = true,
-        ["Elpirate Gran Maja"] = true, ["Elshark Gran Maja"] = true, ["Frostborn Shark"] = true,
-        ["Giant Squid"] = true, ["Gladiator Shark"] = true, ["Great Whale"] = true,
-        ["King Crab"] = true, ["Megalodon"] = true, ["Mosasaur Shark"] = true,
-        ["Panther Eel"] = true, ["Queen Crab"] = true, ["Ruby"] = true,
-        ["Skeleton Narwhal"] = true, ["Viridis Lurker"] = true, ["Worm Fish"] = true
-    }
-
-    -- Logika Thumbnail Pojok Kanan Atas
+    -- Cek Gambar Ikan di Database GitHub
+    local hasImage = {["Blob Shark"] = true, ["Megalodon"] = true, ["Cursed Kraken"] = true} -- Tambahkan sesuai listmu
     local thumbnailURL = stellarLogo
-    if hasImage[name] then
-        thumbnailURL = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
+    if hasImage[fishName] then
+        thumbnailURL = mainRepo .. "Fishes/" .. fishName:gsub(" ", "%%20") .. ".png"
     end
 
     local data = {
-        -- Content dikosongkan agar "NEW CATCH!" hilang
-        ["content"] = "", 
+        ["content"] = "", -- Sesuai permintaan: NEW CATCH Dihapus
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. tostring(rarity) .. " Catch!",
-            -- Deskripsi baru tanpa Nama Player
-            ["description"] = "Congratulations!! You have obtained a new **" .. tostring(rarity) .. "** fish!",
-            ["color"] = 16723110, -- Pink Stellar
+            ["description"] = "Congratulations!! You have obtained a new **" .. tostring(rarity) .. "** fish!", -- Deskripsi Bersih
+            ["color"] = 16723110,
             ["fields"] = {
-                {["name"] = "〢Player Name", ["value"] = "```" .. tostring(user) .. "```", ["inline"] = false}, -- Menampilkan player (kamu/orang lain)
-                {["name"] = "〢Fish Name", ["value"] = "```" .. tostring(name) .. "```", ["inline"] = false}, -- Menampilkan nama ikan (bukan ID)
+                {["name"] = "〢Player Name", ["value"] = "```" .. tostring(playerName) .. "```", ["inline"] = false}, -- Nama Player
+                {["name"] = "〢Fish Name", ["value"] = "```" .. tostring(fishName) .. "```", ["inline"] = false}, -- Nama Ikan
                 {["name"] = "〢Fish Tier", ["value"] = "```" .. tostring(rarity) .. "```", ["inline"] = true},
                 {["name"] = "〢Weight", ["value"] = "```" .. tostring(weight) .. "```", ["inline"] = true},
-                {["name"] = "〢Mutation", ["value"] = "```" .. (mutation ~= "" and tostring(mutation) or "None") .. "```", ["inline"] = true},
+                {["name"] = "〢Mutation", ["value"] = "```" .. (mutation or "None") .. "```", ["inline"] = true},
                 {["name"] = "〢Value", ["value"] = "```$" .. tostring(price) .. "```", ["inline"] = true},
                 {["name"] = "〢Zone", ["value"] = "```" .. tostring(zone) .. "```", ["inline"] = false}
             },
-            ["footer"] = { 
-                ["text"] = "Stellar System • Luc Aetheryn", 
-                ["icon_url"] = stellarLogo -- Logo Stellar di bawah
-            },
-            ["thumbnail"] = { ["url"] = thumbnailURL }, -- Logo/Ikan di pojok kanan atas
+            ["footer"] = { ["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = stellarLogo },
+            ["thumbnail"] = { ["url"] = thumbnailURL },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -301,60 +287,48 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. SMART AUTO-DETECTOR - SYNCED WITH WEBHOOK V6 ]]
+-- [[ 7. OPTIMIZED HOOK & FILTER ]]
 local function AutoHookFish()
     local RS = game:GetService("ReplicatedStorage")
     local CatchRemote = nil
-    
-    -- Mencari Remote secara otomatis
     for _, v in pairs(RS:GetDescendants()) do
         if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
-            CatchRemote = v
-            break
+            CatchRemote = v; break
         end
     end
 
     if CatchRemote then
-        print("⭐ Stellar System: Hook Active!")
-        
         CatchRemote.OnClientEvent:Connect(function(...)
             local args = {...}
             if not _G.WebhookEnabled then return end
 
-            -- 1. Deteksi Nama Player (Biasanya argumen pertama)
-            local catcherName = tostring(args[1]) 
-            
-            -- 2. Deteksi Rarity & Nama Ikan (Cari string yang bukan nama player)
-            local fishName = "Unknown Fish"
+            local playerName = tostring(args[1]) -- Player yang mancing
+            local fishName = "Unknown"
             local rarity = "Common"
             local validRarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
 
+            -- Cari Rarity & Nama Ikan yang Valid
             for i, v in ipairs(args) do
-                local valStr = tostring(v)
-                if table.find(validRarities, valStr) then
-                    rarity = valStr
-                    -- Cari nama ikan di sekitar rarity (string yang bukan nama player & bukan rarity)
-                    for _, potentialFish in pairs(args) do
-                        if type(potentialFish) == "string" and potentialFish ~= catcherName and not table.find(validRarities, potentialFish) then
-                            fishName = potentialFish -- Inilah tostring untuk Fish Name!
-                            break
+                if table.find(validRarities, tostring(v)) then
+                    rarity = tostring(v)
+                    -- Ambil nama ikan (string lain yang bukan player & bukan rarity)
+                    for _, f in pairs(args) do
+                        if type(f) == "string" and f ~= playerName and not table.find(validRarities, f) then
+                            fishName = f; break
                         end
                     end
                 end
             end
 
-            -- 3. Ambil data pendukung (Harga, Berat, Zone)
-            local price = args[3] or 0
-            local zone = args[4] or "Unknown"
-            local weight = args[5] or "0kg"
-            local mutation = args[6] or "None"
+            -- [[ FILTER TIER OPTIMIZATION ]]
+            if #SelectedTiers > 0 and not table.find(SelectedTiers, rarity) then
+                return -- Jika tier tidak dipilih, berhenti di sini.
+            end
 
-            -- 4. Kirim ke Bagian 6 dengan urutan parameter yang baru
-            -- Urutan: (name, rarity, price, zone, img, mutation, weight, user)
-            SendFishNotification(tostring(fishName), tostring(rarity), price, zone, nil, mutation, weight, catcherName)
+            -- Kirim ke Webhook
+            SendFishNotification(fishName, rarity, args[3] or 0, args[4] or "Unknown", nil, args[6] or "None", args[5] or "0kg", playerName)
         end)
     end
 end
-
 task.spawn(AutoHookFish)
 ShowPage("Info")
