@@ -312,24 +312,51 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. BRIDGE TO GAME LOGIC ]]
--- Bagian ini menghubungkan script kamu ke event penangkapan ikan di game Fish It!
+-- [[ 7. BRIDGE TO GAME LOGIC - REVISED ]]
 local function HookFishEvent()
-    local Remote = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("CatchFish") -- Pastikan nama RemoteEvent ini benar sesuai game
+    -- Mencari folder Events di ReplicatedStorage
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Events = ReplicatedStorage:WaitForChild("Events", 10)
+    
+    if not Events then 
+        warn("Stellar System: Events folder not found!")
+        return 
+    end
 
-    Remote.OnClientEvent:Connect(function(fishData)
-        -- Mengambil data dari argument yang dikirim game
-        -- Catatan: Nama variabel di bawah (fishData.Name, dll) harus sesuai dengan struktur data game
-        local name = fishData.Name or "Unknown"
-        local rarity = fishData.Rarity or "Common"
-        local price = fishData.Price or 0
-        local zone = fishData.Zone or "Unknown"
-        local mutation = fishData.Mutation or "None"
-        local weight = fishData.Weight or "0kg"
+    local CatchRemote = Events:WaitForChild("CatchFish", 10)
+
+    if CatchRemote then
+        print("Stellar System: Bridge Active - Waiting for Fish...")
         
-        -- Memanggil fungsi notifikasi yang sudah kita buat tadi
-        SendFishNotification(name, rarity, price, zone, nil, mutation, weight, LocalPlayer.Name)
-    end)
+        CatchRemote.OnClientEvent:Connect(function(data)
+            -- Kita bungkus pcall agar jika game update struktur, script tidak crash
+            local success, err = pcall(function()
+                -- Fish It! biasanya mengirimkan tabel data. Kita bongkar isinya:
+                local name = data.Name or data.FishName or "Unknown"
+                local rarity = data.Rarity or "Common"
+                local price = data.Price or data.Value or 0
+                local zone = data.Zone or "Unknown Location"
+                local mutation = data.Mutation or "None"
+                local weight = data.Weight or "0kg"
+
+                -- Verifikasi Filter Tier (Jika user memilih tier tertentu di UI)
+                if #SelectedTiers > 0 then
+                    if not table.find(SelectedTiers, rarity) then
+                        return -- Jangan kirim jika tidak sesuai filter
+                    end
+                end
+
+                -- Kirim ke Webhook
+                SendFishNotification(name, rarity, price, zone, nil, mutation, weight, LocalPlayer.Name)
+            end)
+            
+            if not success then
+                warn("Stellar System Hook Error: " .. tostring(err))
+            end
+        end)
+    else
+        warn("Stellar System: Remote 'CatchFish' not found!")
+    end
 end
 
 -- Jalankan fungsi hook
