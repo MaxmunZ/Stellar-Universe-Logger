@@ -36,7 +36,8 @@ MiniBtn.MouseButton1Click:Connect(function() Main.Visible = false; FloatBtn.Visi
 FloatBtn.MouseButton1Click:Connect(function() Main.Visible = true; FloatBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- [[ 2. SEARCH MENU (REVISED LOGIC & VISUAL) ]]
+-- [[ 2. SEARCH MENU (REVISED CLICK LOGIC) ]]
+-- Pastikan 'local SelectedTiers = {}' ada di baris paling atas script kamu!
 local SearchMenu = Instance.new("ImageLabel", Main) 
 SearchMenu.Name = "TierSearchMenu"
 SearchMenu.Size = UDim2.new(0, 185, 0, 265) 
@@ -45,8 +46,8 @@ SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
 SearchMenu.ScaleType = Enum.ScaleType.Stretch
 SearchMenu.Visible = false
-SearchMenu.ZIndex = 500 -- ZIndex tinggi agar berada paling depan
-SearchMenu.Active = true -- Mengunci input agar tidak tembus ke bawah
+SearchMenu.ZIndex = 1000 -- Dibikin paling tinggi agar tidak tertutup Content Page
+SearchMenu.Active = true
 
 local SStroke = Instance.new("UIStroke", SearchMenu)
 SStroke.Color = Color3.fromRGB(255, 50, 150)
@@ -54,21 +55,21 @@ SStroke.Thickness = 1.5
 Instance.new("UICorner", SearchMenu)
 
 local STitle = Instance.new("TextLabel", SearchMenu)
-STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.new(1, 1, 1); STitle.Font = Enum.Font.GothamMedium; STitle.TextSize = 14; STitle.ZIndex = 505
+STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.new(1, 1, 1); STitle.Font = Enum.Font.GothamMedium; STitle.TextSize = 14; STitle.ZIndex = 1001
 
 local SList = Instance.new("ScrollingFrame", SearchMenu)
-SList.Size = UDim2.new(1, -20, 1, -85); SList.Position = UDim2.new(0, 10, 0, 40); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 2; SList.ScrollBarImageColor3 = Color3.fromRGB(255, 50, 150); SList.CanvasSize = UDim2.new(0, 0, 0, 260); SList.ZIndex = 510; SList.Selectable = true
+SList.Size = UDim2.new(1, -20, 1, -85); SList.Position = UDim2.new(0, 10, 0, 40); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0; SList.CanvasSize = UDim2.new(0, 0, 0, 260); SList.ZIndex = 1002
 
 local SLayout = Instance.new("UIListLayout", SList)
 SLayout.Padding = UDim.new(0, 4)
-SLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-for i, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
+for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
     b.Name = t
-    b.Size = UDim2.new(1, -5, 0, 30); b.Text = "  " .. t; b.BackgroundTransparency = 0.7; b.BackgroundColor3 = Color3.fromRGB(20, 20, 20); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.TextXAlignment = Enum.TextXAlignment.Left; b.ZIndex = 515; b.AutoButtonColor = true
+    b.Size = UDim2.new(1, 0, 0, 32); b.Text = "  " .. t; b.BackgroundTransparency = 0.7; b.BackgroundColor3 = Color3.fromRGB(20, 20, 20); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.TextXAlignment = Enum.TextXAlignment.Left; b.ZIndex = 1005
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
     
+    -- Efek Gradient
     local bGrad = Instance.new("UIGradient", b)
     bGrad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 150)), 
@@ -77,12 +78,14 @@ for i, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
     bGrad.Enabled = false 
 
     b.MouseButton1Click:Connect(function()
-        -- Debug Print (Bisa lu hapus kalau sudah jalan)
-        print("Tier Clicked: " .. t) 
-        
-        local index = table.find(SelectedTiers, t)
-        if index then
-            table.remove(SelectedTiers, index)
+        -- Cek apakah data sudah ada di tabel
+        local foundIndex = nil
+        for i, v in ipairs(SelectedTiers) do
+            if v == t then foundIndex = i break end
+        end
+
+        if foundIndex then
+            table.remove(SelectedTiers, foundIndex)
             bGrad.Enabled = false
             b.BackgroundTransparency = 0.7
             b.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -93,25 +96,28 @@ for i, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
             b.TextColor3 = Color3.new(1, 1, 1)
         end
         
+        -- Update Teks di Button Luar (Webhook Page)
         if _G.TierBtn then 
             _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") 
         end
     end)
 end
 
--- Tombol DONE
+-- Tombol DONE (Pastikan kelihatan dan bisa diklik)
 local CloseSearch = Instance.new("TextButton", SearchMenu)
-CloseSearch.Size = UDim2.new(0.8, 0, 0, 28)
-CloseSearch.Position = UDim2.new(0.1, 0, 1, -38)
+CloseSearch.Size = UDim2.new(0.8, 0, 0, 30)
+CloseSearch.Position = UDim2.new(0.1, 0, 1, -40)
 CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
 CloseSearch.Text = "DONE"
-CloseSearch.Font = Enum.Font.GothamBold; CloseSearch.TextSize = 13; CloseSearch.TextColor3 = Color3.new(1, 1, 1); CloseSearch.ZIndex = 520
+CloseSearch.Font = Enum.Font.GothamBold; CloseSearch.TextSize = 13; CloseSearch.TextColor3 = Color3.new(1, 1, 1); CloseSearch.ZIndex = 1010
 Instance.new("UICorner", CloseSearch)
 
 local cGrad = Instance.new("UIGradient", CloseSearch)
 cGrad.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(180, 20, 120))
 
-CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
+CloseSearch.MouseButton1Click:Connect(function() 
+    SearchMenu.Visible = false 
+end)
 
 -- [[ 3. HEADER & SIDEBAR ]]
 local Header = Instance.new("Frame", Main); Header.Size = UDim2.new(1, -90, 0, 40); Header.BackgroundTransparency = 1
