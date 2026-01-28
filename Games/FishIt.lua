@@ -281,6 +281,7 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
 
     local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
     local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
+    local fishImageUrl = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
     
     -- Logika Thumbnail: Jika nama ikan belum diupload, Discord biasanya menampilkan kotak kosong.
     -- Di sini kita pastikan fallback ke Logo Stellar jika perlu.
@@ -300,11 +301,12 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
                 {["name"] = "〢Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
                 {["name"] = "〢Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
             },
-            ["footer"] = { ["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = stellarLogo },
-            ["thumbnail"] = { ["url"] = fishImageUrl }, 
-            ["timestamp"] = DateTime.now():ToIsoDate()
-        }}
+             ["footer"] = {
+            ["text"] = "Stellar System • Luc Aetheryn",
+            ["icon_url"] = stellarLogo -- Selalu tampil di pojok bawah
+        },
     }
+
     -- Jika thumbnail gagal (ikan belum diupload), logo stellar tetap ada di footer.
     
     pcall(function()
