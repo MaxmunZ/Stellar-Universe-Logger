@@ -27,25 +27,34 @@ ScreenGui.Name = "StellarFinal"
 ScreenGui.ResetOnSpawn = false
 
 -- [[ 1. SEARCH MENU (FLOATING) ]]
-local SearchMenu = Instance.new("ImageLabel", ScreenGui) -- Diubah menjadi ImageLabel
-SearchMenu.Size = UDim2.fromOffset(180, 240)
-SearchMenu.Position = UDim2.new(0.5, 260, 0.5, -120)
-SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45) -- Fallback color
-SearchMenu.Visible = false
-SearchMenu.Active = true
+local SearchMenu = Instance.new("ImageLabel", Main) -- Parent diubah ke Main agar nempel di panel
+SearchMenu.Size = UDim2.new(0, 180, 0, 240)
+-- Posisinya disesuaikan agar menutupi area Content sebelah kanan
+SearchMenu.Position = UDim2.new(0, 310, 0, 50) 
+SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
-SearchMenu.ScaleType = Enum.ScaleType.Stretch -- Agar gambar menutupi seluruh kotak
+SearchMenu.ScaleType = Enum.ScaleType.Stretch
+SearchMenu.Visible = false
+SearchMenu.ZIndex = 10 -- Agar muncul di atas elemen lain
 
 local SStroke = Instance.new("UIStroke", SearchMenu)
 SStroke.Color = Color3.fromRGB(255, 50, 150)
 SStroke.Thickness = 2
 Instance.new("UICorner", SearchMenu)
 
--- ScrollingFrame dibuat transparan agar background terlihat
+-- Judul "Search" di dalam menu
+local STitle = Instance.new("TextLabel", SearchMenu)
+STitle.Text = "Search"
+STitle.Size = UDim2.new(1, 0, 0, 30)
+STitle.BackgroundTransparency = 1
+STitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+STitle.Font = Enum.Font.GothamMedium
+STitle.TextSize = 14
+
 local SList = Instance.new("ScrollingFrame", SearchMenu)
-SList.Size = UDim2.new(1, -10, 1, -40) -- Beri sedikit jarak agar tidak menutupi border
-SList.Position = UDim2.new(0, 5, 0, 5)
-SList.BackgroundTransparency = 1 
+SList.Size = UDim2.new(1, -10, 1, -40)
+SList.Position = UDim2.new(0, 5, 0, 35)
+SList.BackgroundTransparency = 1
 SList.ScrollBarThickness = 0
 Instance.new("UIListLayout", SList).Padding = UDim.new(0, 5)
 
