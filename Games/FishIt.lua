@@ -214,4 +214,47 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
+-- [[ 6. FIXED NOTIFICATION - FULL STELLAR PINK VERSION ]]
+local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
+    if not _G.WebhookEnabled then return end
+    
+    local url = WebhookURLBox.Text:gsub("%s+", "")
+    if url == "" or not url:find("discord") then return end
+
+    -- Mengunci semua warna menjadi Pink Stellar (16723110)
+    local embedColor = 16723110 
+
+    local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
+    local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
+    local fishImageUrl = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
+
+    local data = {
+        ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
+        ["embeds"] = {{
+            ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
+            ["description"] = "Congratulations!! **" .. user .. "** You have obtained a new **" .. rarity .. "** fish!",
+            ["color"] = embedColor, -- Sekarang selalu Pink
+            ["fields"] = {
+                {["name"] = "〢Fish Name", ["value"] = "```" .. name .. "```", ["inline"] = false},
+                {["name"] = "〢Fish Tier", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
+                {["name"] = "〢Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
+                {["name"] = "〢Mutation", ["value"] = "```" .. mutation .. "```", ["inline"] = true},
+                {["name"] = "〢Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
+                {["name"] = "〢Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
+            },
+            ["footer"] = { ["text"] = "Stellar System", ["icon_url"] = stellarLogo },
+            ["thumbnail"] = { ["url"] = fishImageUrl }, 
+            ["timestamp"] = DateTime.now():ToIsoDate()
+        }}
+    }
+    
+    pcall(function()
+        (request or http_request or syn.request)({
+            Url = url, Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(data)
+        })
+    end)
+end
+
 ShowPage("Info")
