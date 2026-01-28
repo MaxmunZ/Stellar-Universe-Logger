@@ -240,123 +240,78 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. OPTIMIZED NOTIFICATION ]]
+-- [[ 6. FIX NOTIFICATION - TIER DISPLAY ]]
 local function SendFishNotification(fishName, rarity, price, zone, img, mutation, weight, playerName)
-    if not _G.WebhookEnabled then return end
+    -- ... (bagian atas tetap sama) ...
     
-    local url = WebhookURLBox.Text:gsub("%s+", "")
-    if url == "" or not url:find("discord") then return end
-
-    local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
-    local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
-    
-    -- Cek Gambar Ikan di Database GitHub
-    local hasImage = {["Blob Shark"] = true, ["Megalodon"] = true, ["Cursed Kraken"] = true} -- Tambahkan sesuai listmu
-    local thumbnailURL = stellarLogo
-    if hasImage[fishName] then
-        thumbnailURL = mainRepo .. "Fishes/" .. fishName:gsub(" ", "%%20") .. ".png"
-    end
-
     local data = {
-        ["content"] = "", -- Sesuai permintaan: NEW CATCH Dihapus
         ["embeds"] = {{
-            ["title"] = "⭐ Stellar System | " .. tostring(rarity) .. " Catch!",
-            ["description"] = "Congratulations!! You have obtained a new **" .. tostring(rarity) .. "** fish!", -- Deskripsi Bersih
+            ["title"] = "⭐ Stellar System | " .. tostring(rarity) .. " Catch!", -- Ini akan berubah
+            ["description"] = "Congratulations!! You have obtained a new **" .. tostring(rarity) .. "** fish!", -- Ini juga
             ["color"] = 16723110,
             ["fields"] = {
-                {["name"] = "〢Player Name", ["value"] = "```" .. tostring(playerName) .. "```", ["inline"] = false}, -- Nama Player
-                {["name"] = "〢Fish Name", ["value"] = "```" .. tostring(fishName) .. "```", ["inline"] = false}, -- Nama Ikan
+                {["name"] = "〢Player Name", ["value"] = "```" .. tostring(playerName) .. "```", ["inline"] = false},
+                {["name"] = "〢Fish Name", ["value"] = "```" .. tostring(fishName) .. "```", ["inline"] = false},
+                -- PASTIKAN BARIS DI BAWAH INI MENGGUNAKAN tostring(rarity)
                 {["name"] = "〢Fish Tier", ["value"] = "```" .. tostring(rarity) .. "```", ["inline"] = true},
                 {["name"] = "〢Weight", ["value"] = "```" .. tostring(weight) .. "```", ["inline"] = true},
                 {["name"] = "〢Mutation", ["value"] = "```" .. (mutation or "None") .. "```", ["inline"] = true},
                 {["name"] = "〢Value", ["value"] = "```$" .. tostring(price) .. "```", ["inline"] = true},
                 {["name"] = "〢Zone", ["value"] = "```" .. tostring(zone) .. "```", ["inline"] = false}
             },
-            ["footer"] = { ["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = stellarLogo },
-            ["thumbnail"] = { ["url"] = thumbnailURL },
-            ["timestamp"] = DateTime.now():ToIsoDate()
+            -- ... (footer & thumbnail tetap sama) ...
         }}
     }
-    
-    pcall(function()
-        (request or http_request or syn.request)({
-            Url = url, Method = "POST",
-            Headers = {["Content-Type"] = "application/json"},
-            Body = HttpService:JSONEncode(data)
-        })
+    -- ... (pcall request) ...
+end
+
+-- [[ 7. FIX HOOK - RARITY OVERWRITE ]]
+local function AutoHookFish()
+    -- ... (pencarian remote tetap sama) ...
+
+    CatchRemote.OnClientEvent:Connect(function(...)
+        local args = {...}
+        if not _G.WebhookEnabled then return end
+
+        local playerName = tostring(args[1])
+        local rarity = "Common" -- Nilai awal
+        local fishName = "Unknown"
+        local validRarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
+
+        -- MENCARI RARITY (PENTING: Harus menemukan tier asli)
+        for _, v in pairs(args) do
+            local valStr = tostring(v)
+            if table.find(validRarities, valStr) then
+                rarity = valStr -- SEKARANG RARITY BERUBAH MENJADI MYTHIC/RARE/DLL
+                break
+            end
+        end
+
+        -- MENCARI NAMA IKAN
+        for _, v in pairs(args) do
+            if type(v) == "string" and v ~= playerName and not table.find(validRarities, v) and v ~= "None" then
+                fishName = v
+                break
+            end
+        end
+
+        -- FILTER TIER
+        if #SelectedTiers > 0 and not table.find(SelectedTiers, rarity) then
+            return
+        end
+
+        -- KIRIM DATA (Pastikan urutan parameter: fishName, rarity, price, zone, img, mutation, weight, playerName)
+        SendFishNotification(
+            tostring(fishName), 
+            tostring(rarity), -- Variabel ini yang akan mengubah teks di Discord
+            args[3] or 0, 
+            args[4] or "Ocean", 
+            nil, 
+            args[6] or "None", 
+            args[5] or "0kg", 
+            playerName
+        )
     end)
 end
-
--- [[ 7. FINAL REPAIR - ALL TIERS DETECTION ]]
-local function AutoHookFish()
-    local RS = game:GetService("ReplicatedStorage")
-    local CatchRemote = nil
-    
-    for _, v in pairs(RS:GetDescendants()) do
-        if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
-            CatchRemote = v; break
-        end
-    end
-
-    if CatchRemote then
-        print("⭐ Stellar System: Hook Active & Monitoring All Tiers")
-        CatchRemote.OnClientEvent:Connect(function(...)
-            local args = {...}
-            if not _G.WebhookEnabled then return end
-
-            local playerName = tostring(args[1])
-            local rarity = "Common"
-            local fishName = "Unknown"
-            local validRarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
-
-            -- 1. CARI RARITY DULU (Prioritas Utama)
-            for _, v in pairs(args) do
-                local s = tostring(v)
-                if table.find(validRarities, s) then
-                    rarity = s
-                    break
-                end
-            end
-
-            -- 2. CARI NAMA IKAN (Cari string yang bukan Player, bukan Rarity, dan bukan Zone)
-            for _, v in pairs(args) do
-                if type(v) == "string" 
-                   and v ~= playerName 
-                   and not table.find(validRarities, v) 
-                   and v ~= "None" 
-                   and not v:find("Zone") then
-                    fishName = v
-                    break
-                end
-            end
-
-            -- 3. LOGIKA FILTER (Penyebab Mythic tidak muncul biasanya di sini)
-            -- Jika menu pilihan Tier kosong, maka OTOMATIS kirim semua ikan.
-            if #SelectedTiers > 0 then
-                local isSelected = false
-                for _, t in pairs(SelectedTiers) do
-                    if rarity == t then isSelected = true break end
-                end
-                if not isSelected then return end -- Skip jika tier tidak dicentang
-            end
-
-            -- 4. KIRIM DATA (Pastikan urutan parameter sesuai Bagian 6)
-            -- SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
-            pcall(function()
-                SendFishNotification(
-                    tostring(fishName), 
-                    tostring(rarity), 
-                    args[3] or 0, 
-                    args[4] or "Main Ocean", 
-                    nil, 
-                    args[6] or "None", 
-                    args[5] or "0kg", 
-                    playerName
-                )
-            end)
-        end)
-    end
-end
-task.spawn(AutoHookFish)
 
 ShowPage("Info")
