@@ -36,17 +36,17 @@ MiniBtn.MouseButton1Click:Connect(function() Main.Visible = false; FloatBtn.Visi
 FloatBtn.MouseButton1Click:Connect(function() Main.Visible = true; FloatBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- [[ 2. SEARCH MENU (FINAL VISUAL FIX) ]]
+-- [[ 2. SEARCH MENU (REVISED LOGIC & VISUAL) ]]
 local SearchMenu = Instance.new("ImageLabel", Main) 
 SearchMenu.Name = "TierSearchMenu"
 SearchMenu.Size = UDim2.new(0, 185, 0, 265) 
-SearchMenu.Position = UDim2.new(0, 305, 0, 45) 
+SearchMenu.Position = UDim2.new(0, 180, 0, 45) 
 SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-SearchMenu.Image = GetStellarAsset("StellarB2_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
+SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
 SearchMenu.ScaleType = Enum.ScaleType.Stretch
 SearchMenu.Visible = false
-SearchMenu.ZIndex = 200
-SearchMenu.Active = true -- Biar bisa diklik elemen di atasnya
+SearchMenu.ZIndex = 500 -- ZIndex tinggi agar berada paling depan
+SearchMenu.Active = true -- Mengunci input agar tidak tembus ke bawah
 
 local SStroke = Instance.new("UIStroke", SearchMenu)
 SStroke.Color = Color3.fromRGB(255, 50, 150)
@@ -54,55 +54,62 @@ SStroke.Thickness = 1.5
 Instance.new("UICorner", SearchMenu)
 
 local STitle = Instance.new("TextLabel", SearchMenu)
-STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.fromRGB(255, 255, 255); STitle.Font = Enum.Font.GothamMedium; STitle.TextSize = 14; STitle.ZIndex = 205
+STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.new(1, 1, 1); STitle.Font = Enum.Font.GothamMedium; STitle.TextSize = 14; STitle.ZIndex = 505
 
 local SList = Instance.new("ScrollingFrame", SearchMenu)
-SList.Size = UDim2.new(1, -20, 1, -80); SList.Position = UDim2.new(0, 10, 0, 40); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0; SList.CanvasSize = UDim2.new(0, 0, 0, 260); SList.ZIndex = 210
-Instance.new("UIListLayout", SList).Padding = UDim.new(0, 4)
+SList.Size = UDim2.new(1, -20, 1, -85); SList.Position = UDim2.new(0, 10, 0, 40); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 2; SList.ScrollBarImageColor3 = Color3.fromRGB(255, 50, 150); SList.CanvasSize = UDim2.new(0, 0, 0, 260); SList.ZIndex = 510; SList.Selectable = true
 
-for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
+local SLayout = Instance.new("UIListLayout", SList)
+SLayout.Padding = UDim.new(0, 4)
+SLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+for i, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
-    b.Size = UDim2.new(1, 0, 0, 30); b.Text = "  " .. t; b.BackgroundTransparency = 0.8; b.BackgroundColor3 = Color3.fromRGB(0, 0, 0); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.TextXAlignment = Enum.TextXAlignment.Left; b.ZIndex = 215
+    b.Name = t
+    b.Size = UDim2.new(1, -5, 0, 30); b.Text = "  " .. t; b.BackgroundTransparency = 0.7; b.BackgroundColor3 = Color3.fromRGB(20, 20, 20); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.TextXAlignment = Enum.TextXAlignment.Left; b.ZIndex = 515; b.AutoButtonColor = true
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
     
-    -- Gradient Effect untuk Button
     local bGrad = Instance.new("UIGradient", b)
     bGrad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 150)), 
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 20, 80))
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 20, 100))
     })
-    bGrad.Enabled = false -- Mati dulu, nyala pas dipilih
+    bGrad.Enabled = false 
 
     b.MouseButton1Click:Connect(function()
-        if table.find(SelectedTiers, t) then
-            for i, v in ipairs(SelectedTiers) do if v == t then table.remove(SelectedTiers, i) end end
+        -- Debug Print (Bisa lu hapus kalau sudah jalan)
+        print("Tier Clicked: " .. t) 
+        
+        local index = table.find(SelectedTiers, t)
+        if index then
+            table.remove(SelectedTiers, index)
             bGrad.Enabled = false
-            b.BackgroundTransparency = 0.8
+            b.BackgroundTransparency = 0.7
             b.TextColor3 = Color3.fromRGB(200, 200, 200)
         else
             table.insert(SelectedTiers, t)
             bGrad.Enabled = true
-            b.BackgroundTransparency = 0.2 -- Biar gradient kelihatan tegas
-            b.TextColor3 = Color3.fromRGB(255, 255, 255)
+            b.BackgroundTransparency = 0.1
+            b.TextColor3 = Color3.new(1, 1, 1)
         end
-        if _G.TierBtn then _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") end
+        
+        if _G.TierBtn then 
+            _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") 
+        end
     end)
 end
 
--- Tombol DONE (Visual diperjelas tapi tetap elegan)
+-- Tombol DONE
 local CloseSearch = Instance.new("TextButton", SearchMenu)
 CloseSearch.Size = UDim2.new(0.8, 0, 0, 28)
-CloseSearch.Position = UDim2.new(0.1, 0, 1, -35)
+CloseSearch.Position = UDim2.new(0.1, 0, 1, -38)
 CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
 CloseSearch.Text = "DONE"
-CloseSearch.Font = Enum.Font.GothamBold
-CloseSearch.TextSize = 12
-CloseSearch.TextColor3 = Color3.new(1, 1, 1)
-CloseSearch.ZIndex = 220
+CloseSearch.Font = Enum.Font.GothamBold; CloseSearch.TextSize = 13; CloseSearch.TextColor3 = Color3.new(1, 1, 1); CloseSearch.ZIndex = 520
 Instance.new("UICorner", CloseSearch)
 
 local cGrad = Instance.new("UIGradient", CloseSearch)
-cGrad.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(150, 20, 100))
+cGrad.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(180, 20, 120))
 
 CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
 
