@@ -242,31 +242,40 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. FIXED NOTIFICATION - GUARANTEED PINK VERSION ]]
+-- [[ 6. NOTIFICATION REPAIR - FALLBACK THUMBNAIL & PINK COLOR ]]
 local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
     if not _G.WebhookEnabled then return end
     
     local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
 
-    -- KUNCI WARNA PINK (16723110 adalah kode desimal untuk Pink Stellar)
+    -- Kunci Warna Pink Stellar (16723110) agar tidak putih lagi
     local finalEmbedColor = 16723110 
+
+    -- Penanganan Mutation agar barisnya muncul
+    local mutationText = (mutation == "" or mutation == nil or mutation == "None") and "No Mutation" or mutation
 
     local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
     local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
-    local fishImageUrl = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
+    
+    -- Logika Gambar: Jika ada link 'img' dari game gunakan itu, jika tidak coba cari di GitHub.
+    -- Jika ikan 'Unknown', kita langsung arahkan ke Logo Stellar.
+    local fishImageUrl = stellarLogo
+    if name ~= "Unknown" then
+        fishImageUrl = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
+    end
 
     local data = {
         ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
             ["description"] = "Congratulations!! **" .. user .. "** You have obtained a new **" .. rarity .. "** fish!",
-            ["color"] = finalEmbedColor, -- Menggunakan variabel yang sudah dikunci
+            ["color"] = finalEmbedColor,
             ["fields"] = {
                 {["name"] = "〢Fish Name", ["value"] = "```" .. name .. "```", ["inline"] = false},
                 {["name"] = "〢Fish Tier", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
                 {["name"] = "〢Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
-                {["name"] = "〢Mutation", ["value"] = "```" .. mutation .. "```", ["inline"] = true},
+                {["name"] = "〢Mutation", ["value"] = "```" .. mutationText .. "```", ["inline"] = true},
                 {["name"] = "〢Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
                 {["name"] = "〢Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
             },
@@ -274,21 +283,21 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
                 ["text"] = "Stellar System • Luc Aetheryn", 
                 ["icon_url"] = stellarLogo 
             },
-            ["thumbnail"] = { ["url"] = fishImageUrl }, 
+            ["thumbnail"] = { 
+                ["url"] = fishImageUrl -- Jika URL ini mati/404, Discord biasanya tidak menampilkan apa-apa.
+            }, 
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
     
-    local success, err = pcall(function()
-        return (request or http_request or syn.request)({
+    pcall(function()
+        (request or http_request or syn.request)({
             Url = url, 
             Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode(data)
         })
     end)
-    
-    if not success then warn("Webhook Error: " .. tostring(err)) end
 end
 
 ShowPage("Info")
