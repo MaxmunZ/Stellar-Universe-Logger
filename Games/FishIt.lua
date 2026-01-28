@@ -202,8 +202,9 @@ local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.ne
 
 -- [[ FIX: PENGGUNAAN REQUEST UNTUK EXECUTOR ]]
 TestBtn.MouseButton1Click:Connect(function()
-    -- Menggunakan nama variabel Box yang baru
+    -- Pastikan mengambil teks dari Box yang benar
     local url = WebhookURLBox.Text:gsub("%s+", "")
+    
     if url == "" or not url:find("discord") then
         TestBtn.Text = "Invalid Webhook URL!"
         task.wait(2)
@@ -211,13 +212,23 @@ TestBtn.MouseButton1Click:Connect(function()
         return
     end
 
+    -- Menggunakan link logo yang sudah pasti ada di root folder
+    local stellarLogo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"
+
     local payload = HttpService:JSONEncode({
         ["content"] = DiscordIDBox.Text ~= "" and "Notification for <@"..DiscordIDBox.Text..">" or "Stellar System Test",
         ["embeds"] = {{
-            ["title"] = "Connection Test",
-            ["description"] = "Webhook is connected!",
-            ["color"] = 41727,
-            ["image"] = {["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/HelloChat.png"}
+            ["title"] = "✅ Connection Test Successful",
+            ["description"] = "Stellar System has been successfully linked to your Discord Webhook.",
+            ["color"] = 16723110, -- Pink Stellar
+            ["thumbnail"] = {
+                ["url"] = stellarLogo
+            },
+            ["footer"] = {
+                ["text"] = "Stellar System • Luc Aetheryn",
+                ["icon_url"] = stellarLogo
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     })
 
@@ -233,10 +244,12 @@ TestBtn.MouseButton1Click:Connect(function()
     if success then
         TestBtn.Text = "Successfully Sent!"
     else
-        TestBtn.Text = "Failed To Send"
+        TestBtn.Text = "Failed To Send (Check URL)"
+        warn("Error: " .. tostring(response)) -- Cek F9 untuk detail error
     end
+    
     task.wait(2)
-    TestBtn.Text = "Test Webhook Connection"
+    TestBtn.Text = "Tests Webhook Connection"
 end)
 
 -- [[ 5. TAB SYSTEM ]]
