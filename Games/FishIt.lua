@@ -312,63 +312,46 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. UNIVERSAL GAME HOOK - STOPS GUESSING ]]
-local function HookGameEvents()
-    local mt = getrawmetatable(game)
-    local oldNamecall = mt.__namecall
-    setreadonly(mt, false)
-
-    mt.__namecall = newcclosure(function(self, ...)
-        local method = getnamecallmethod()
-        local args = {...}
-
-        -- Mencari Remote yang membawa data ikan saat tertangkap
-        if method == "FireServer" or method == "InvokeServer" then
-            -- Debug: print(self.Name) -- Aktifkan ini di F9 jika ingin melihat semua remote
-        end
-
-        return oldNamecall(self, ...)
-    end)
-
-    -- ALTERNATIF: Mencegat UI Notifikasi Game (Seringkali lebih ampuh)
-    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+-- [[ 7. SMART AUTO-DETECTOR ]]
+local function AutoHookFish()
+    local RS = game:GetService("ReplicatedStorage")
     
-    -- Menunggu kemunculan UI Notifikasi Ikan di layar
-    PlayerGui.DescendantAdded:Connect(function(desc)
-        if desc:IsA("TextLabel") and _G.WebhookEnabled then
-            -- Logika deteksi teks (Contoh: "You caught a...")
-            task.wait(0.1)
-            -- Ini adalah cara manual jika Remote sulit ditemukan
+    -- Mencari Remote yang berhubungan dengan "Catch" secara otomatis
+    local CatchRemote = nil
+    for _, v in pairs(RS:GetDescendants()) do
+        if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
+            CatchRemote = v
+            break
         end
-    end)
+    end
 
-    -- KHUSUS FISH IT (RE-CHECK):
-    -- Mencoba menyusup ke fungsi Catch asli milik game
-    local success, remote = pcall(function() 
-        return game:GetService("ReplicatedStorage").Events.CatchFish 
-    end)
+    if CatchRemote then
+        print("⭐ Stellar System: Found Remote -> " .. CatchRemote:GetFullName())
+        
+        CatchRemote.OnClientEvent:Connect(function(...)
+            local args = {...}
+            local data = args[1] -- Biasanya data ada di argumen pertama
 
-    if success and remote then
-        remote.OnClientEvent:Connect(function(data)
-            if not _G.WebhookEnabled then return end
-            
-            -- Debugging: Melihat isi data asli dari game di F9
-            print("Stellar Detected Data:", HttpService:JSONEncode(data))
+            if _G.WebhookEnabled and data then
+                -- DEBUG: Melihat struktur asli data di Console F9
+                print("Stellar Data Log:", HttpService:JSONEncode(data))
 
-            local name = data.Fish or data.Name or "Unknown"
-            local rarity = data.Rarity or "Common"
-            local weight = data.Weight or "0kg"
-            local price = data.Price or data.Value or 0
-            local zone = data.Zone or "Unknown"
-            local mutation = data.Mutation or "None"
+                -- Pemetaan data (Mapping) berdasarkan struktur umum Fish It!
+                local name = data.Name or data.FishName or data.Fish or "Unknown"
+                local rarity = data.Rarity or data.Tier or "Common"
+                local price = data.Price or data.Value or data.SellValue or 0
+                local zone = data.Zone or data.Location or "Unknown"
+                local weight = data.Weight or "0kg"
+                local mutation = data.Mutation or "None"
 
-            -- Filter Rarity
-            if #SelectedTiers > 0 and not table.find(SelectedTiers, rarity) then return end
-
-            SendFishNotification(name, rarity, price, zone, nil, mutation, weight, LocalPlayer.Name)
+                -- Jalankan Notifikasi
+                SendFishNotification(name, rarity, price, zone, nil, mutation, weight, LocalPlayer.Name)
+            end
         end)
+    else
+        warn("❌ Stellar System: Remote penangkapan tidak ditemukan!")
     end
 end
 
-task.spawn(HookGameEvents)
+task.spawn(AutoHookFish)
 ShowPage("Info")
