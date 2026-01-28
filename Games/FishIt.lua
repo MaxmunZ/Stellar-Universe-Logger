@@ -101,19 +101,19 @@ local function AddDesc(txt, y)
     local d = Instance.new("TextLabel", InfoPage); d.Text = txt; d.Size = UDim2.new(0.9, 0, 0, 0); d.Position = UDim2.new(0.05, 0, 0, y); d.Font = Enum.Font.Gotham; d.TextColor3 = Color3.fromRGB(160, 160, 160); d.TextSize = 11; d.TextXAlignment = 0; d.BackgroundTransparency = 1; d.TextWrapped = true; d.AutomaticSize = Enum.AutomaticSize.Y
 end
 
--- [[ DISCORD UI - ADJUSTED POSITION ]]
--- Mengubah posisi Line menjadi 140 (tepat di bawah Last Update)
-local Line = Instance.new("Frame", InfoPage); Line.Position = UDim2.new(0.05, 0, 0, 140); Line.Size = UDim2.new(0.9, 0, 0, 3); Line.BorderSizePixel = 0; 
+-- [[ DISCORD UI - ULTRA COMPACT POSITION ]]
+-- Garis sekarang berada di posisi 130 (tepat di bawah Last Update)
+local Line = Instance.new("Frame", InfoPage); Line.Position = UDim2.new(0.05, 0, 0, 130); Line.Size = UDim2.new(0.9, 0, 0, 3); Line.BorderSizePixel = 0; 
 local G = Instance.new("UIGradient", Line); G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
 
--- Mengubah posisi Box Discord
-local DBox = Instance.new("Frame", InfoPage); DBox.Position = UDim2.new(0.05, 0, 0, 155); DBox.Size = UDim2.new(0.9, 0, 0, 60); DBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45); Instance.new("UICorner", DBox)
+-- Kotak Discord naik ke posisi 145
+local DBox = Instance.new("Frame", InfoPage); DBox.Position = UDim2.new(0.05, 0, 0, 145); DBox.Size = UDim2.new(0.9, 0, 0, 60); DBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45); Instance.new("UICorner", DBox)
 local DIcon = Instance.new("ImageLabel", DBox); DIcon.Size = UDim2.fromOffset(40, 40); DIcon.Position = UDim2.new(0, 10, 0.5, -20); DIcon.Image = LogoDiscord; DIcon.BackgroundTransparency = 1; DIcon.ScaleType = Enum.ScaleType.Fit
 local DName = Instance.new("TextLabel", DBox); DName.Text = "Stellar Discord"; DName.Position = UDim2.new(0, 60, 0.2, 0); DName.Size = UDim2.new(1, -70, 0.4, 0); DName.Font = Enum.Font.GothamBold; DName.TextColor3 = Color3.new(1, 1, 1); DName.TextXAlignment = 0; DName.BackgroundTransparency = 1
 local DSub = Instance.new("TextLabel", DBox); DSub.Text = "Official Link Discord Server"; DSub.Position = UDim2.new(0, 60, 0.5, 0); DSub.Size = UDim2.new(1, -70, 0.4, 0); DSub.Font = Enum.Font.Gotham; DSub.TextColor3 = Color3.fromRGB(200, 200, 200); DSub.TextXAlignment = 0; DSub.BackgroundTransparency = 1
 
--- Mengubah posisi Button 
-local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.new(0.05, 0, 0, 225); CopyBtn.Size = UDim2.new(0.9, 0, 0, 32); CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); CopyBtn.Text = "Copy Link Discord"; CopyBtn.Font = Enum.Font.Gotham; CopyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", CopyBtn)
+-- Tombol Copy naik ke posisi 215
+local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.new(0.05, 0, 0, 215); CopyBtn.Size = UDim2.new(0.9, 0, 0, 32); CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); CopyBtn.Text = "Copy Link Discord"; CopyBtn.Font = Enum.Font.Gotham; CopyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", CopyBtn)
 
 -- [[ WEBHOOK PAGE ]]
 local WebhookPage = CreatePage("Webhook", true)
