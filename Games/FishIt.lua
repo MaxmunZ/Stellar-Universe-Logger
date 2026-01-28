@@ -152,13 +152,55 @@ AddWhToggle("Send Fish Webhook", 310)
 
 local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
 
--- [[ WEBHOOK TEST LOGIC ]]
+-- [[ WEBHOOK TEST LOGIC - CLEAN VERSION ]]
 TestBtn.MouseButton1Click:Connect(function()
     local url = WebhookURLBox.Text:gsub("%s+", "")
-    if url == "" or not url:find("discord") then TestBtn.Text = "Invalid URL!"; task.wait(2); TestBtn.Text = "Tests Webhook Connection"; return end
-    local payload = HttpService:JSONEncode({ ["content"] = DiscordIDBox.Text ~= "" and "Test for <@"..DiscordIDBox.Text..">" or "Stellar Test", ["embeds"] = {{["title"]="✅ Success", ["description"]="Linked!", ["color"]=16723110, ["timestamp"]=DateTime.now():ToIsoDate()}} })
-    pcall(function() (request or http_request or syn.request)({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = payload }) end)
-    TestBtn.Text = "Sent!"; task.wait(2); TestBtn.Text = "Tests Webhook Connection"
+    
+    if url == "" or not url:find("discord") then
+        TestBtn.Text = "Invalid Webhook URL!"
+        task.wait(2)
+        TestBtn.Text = "Tests Webhook Connection"
+        return
+    end
+
+    -- URL Logo Stellar untuk Thumbnail di dalam kotak
+    local stellarLogo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"
+
+    local payload = HttpService:JSONEncode({
+        -- Username & Avatar dihapus agar menggunakan bawaan Discord
+        ["content"] = "Stellar System Test", 
+        ["embeds"] = {{
+            ["title"] = "✅ Connection Test Successful",
+            ["description"] = "Stellar System has been successfully linked to your Discord Webhook.",
+            ["color"] = 16723110, -- Pink Stellar
+            ["thumbnail"] = {
+                ["url"] = stellarLogo 
+            },
+            ["footer"] = {
+                ["text"] = "Stellar System",
+                ["icon_url"] = stellarLogo
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate()
+        }}
+    })
+
+    local success, response = pcall(function()
+        return (request or http_request or syn.request)({
+            Url = url,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = payload
+        })
+    end)
+
+    if success then
+        TestBtn.Text = "Successfully Sent!"
+    else
+        TestBtn.Text = "Failed To Send"
+    end
+    
+    task.wait(2)
+    TestBtn.Text = "Test Webhook Connection"
 end)
 
 -- [[ 5. TAB SYSTEM ]]
