@@ -264,37 +264,26 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. FISHING LOGIC & WEBHOOK SENDER - STELLAR CUSTOM STYLE ]]
+-- [[ 6. FIXED NOTIFICATION - STELLAR STYLE ]]
 local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
     if not _G.WebhookEnabled then return end
     
     local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
-    
-    -- Filter Tier
-    local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
-    if currentFilter ~= "Select Options" and not currentFilter:lower():find(rarity:lower()) then 
-        return 
-    end
 
-    -- Warna Berdasarkan Rarity
+    -- Warna Pink Stellar (Jika rarity tidak terdaftar, tetap Pink)
+    local stellarPink = 16723110 
     local rarityColors = {
-        ["common"] = 12632256,    -- Abu-abu
-        ["uncommon"] = 3066993,   -- Hijau
-        ["rare"] = 3447003,       -- Biru
-        ["epic"] = 10181046,      -- Ungu
-        ["legendary"] = 15105570, -- Orange
-        ["mythic"] = 15539236,    -- Pink/Mythic
-        ["secret"] = 16711680     -- Merah (Secret)
+        ["common"] = 12632256, ["uncommon"] = 3066993, ["rare"] = 3447003,
+        ["epic"] = 10181046, ["legendary"] = 15105570, ["mythic"] = 15539236, ["secret"] = 16711680
     }
-    local embedColor = rarityColors[rarity:lower()] or 16723110
+    local embedColor = rarityColors[rarity:lower()] or stellarPink
 
-    -- Link Assets
     local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
     local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
     
-    -- Gambar Ikan (Mengambil dari folder /Fishes/)
-    -- Gunakan gsub untuk menangani spasi di nama ikan agar link valid
+    -- Logika Thumbnail: Jika nama ikan belum diupload, Discord biasanya menampilkan kotak kosong.
+    -- Di sini kita pastikan fallback ke Logo Stellar jika perlu.
     local fishImageUrl = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
 
     local data = {
@@ -311,28 +300,22 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
                 {["name"] = "〢Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
                 {["name"] = "〢Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
             },
-            ["footer"] = {
-                ["text"] = "Stellar System • Luc Aetheryn",
-                ["icon_url"] = stellarLogo
-            },
-            ["thumbnail"] = {
-                -- Jika gambar ikan tidak ada, Discord akan mencoba memuat link ini. 
-                -- Kamu bisa menambahkan pcall jika ingin fallback yang lebih keras.
-                ["url"] = fishImageUrl 
-            },
+            ["footer"] = { ["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = stellarLogo },
+            ["thumbnail"] = { ["url"] = fishImageUrl }, 
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
-
+    -- Jika thumbnail gagal (ikan belum diupload), logo stellar tetap ada di footer.
+    
     pcall(function()
         (request or http_request or syn.request)({
-            Url = url,
-            Method = "POST",
+            Url = url, Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode(data)
         })
     end)
 end
+
 
 -- [[ 7. SMART DETECTOR (Deep Scan) ]]
 local function ForceScan(tab)
@@ -360,46 +343,29 @@ local function ForceScan(tab)
 end
 
 -- [[ 7. UNIVERSAL DETECTOR - ULTRA SENSITIVE MODE ]]
-local function DeepCheck(data)
-    if type(data) ~= "table" then return end
+-- [[ 7. FIXED DETECTOR - NAME OVER ID ]]
+local function IsFishData(data)
+    if type(data) ~= "table" then return nil end
     
-    -- Mencoba mencari pola data ikan dalam tabel apapun yang lewat
-    local fishName = data.Name or data.Fish or data.FishName or data.Id
-    local fishRarity = data.Rarity or data.Tier or data.RarityName or "Common"
+    -- URUTAN PENTING: Cari Nama/Species dulu, baru Id (nomor) sebagai cadangan terakhir
+    local n = data.FishName or data.Name or data.Species or data.Fish or data.Id
+    local r = data.Tier or data.Rarity or data.Rank or "Common"
     
-    if fishName then
-        SendFishNotification(
-            tostring(fishName),
-            tostring(fishRarity),
-            tostring(data.Price or "0"),
-            tostring(data.Zone or "Unknown"),
-            "",
-            tostring(data.Mutation or "None"),
-            tostring(data.Weight or "0"),
-            game.Players.LocalPlayer.Name
-        )
-        return true
+    if n then
+        -- Jika n adalah nomor (Id), tapi ada data Species, gunakan Species
+        local finalName = tostring(n)
+        
+        return {
+            Name = finalName,
+            Rarity = tostring(r),
+            Price = tostring(data.Price or data.Value or "0"),
+            Weight = tostring(data.Weight or data.Lbs or "N/A"),
+            Mutation = tostring(data.Mutation or data.Variant or "None"),
+            Zone = tostring(data.Location or data.Zone or "Dynamic Zone")
+        }
     end
-    return false
+    return nil
 end
-
--- Memantau SEMUA RemoteEvent di dalam Game
-game:GetService("RunService").Heartbeat:Connect(function()
-    for _, remote in pairs(game:GetDescendants()) do
-        if remote:IsA("RemoteEvent") and not remote:GetAttribute("StellarHooked") then
-            remote:SetAttribute("StellarHooked", true)
-            
-            remote.OnClientEvent:Connect(function(...)
-                local args = {...}
-                for _, arg in pairs(args) do
-                    if type(arg) == "table" then
-                        DeepCheck(arg)
-                    end
-                end
-            end)
-        end
-    end
-end)
 
 -- Backup: Deteksi lewat UI (Jika RemoteEvent tidak terdeteksi)
 game.Players.LocalPlayer.PlayerGui.DescendantAdded:Connect(function(desc)
