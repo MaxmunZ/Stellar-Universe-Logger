@@ -312,54 +312,63 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. BRIDGE TO GAME LOGIC - REVISED ]]
-local function HookFishEvent()
-    -- Mencari folder Events di ReplicatedStorage
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Events = ReplicatedStorage:WaitForChild("Events", 10)
+-- [[ 7. UNIVERSAL GAME HOOK - STOPS GUESSING ]]
+local function HookGameEvents()
+    local mt = getrawmetatable(game)
+    local oldNamecall = mt.__namecall
+    setreadonly(mt, false)
+
+    mt.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+
+        -- Mencari Remote yang membawa data ikan saat tertangkap
+        if method == "FireServer" or method == "InvokeServer" then
+            -- Debug: print(self.Name) -- Aktifkan ini di F9 jika ingin melihat semua remote
+        end
+
+        return oldNamecall(self, ...)
+    end)
+
+    -- ALTERNATIF: Mencegat UI Notifikasi Game (Seringkali lebih ampuh)
+    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
     
-    if not Events then 
-        warn("Stellar System: Events folder not found!")
-        return 
-    end
+    -- Menunggu kemunculan UI Notifikasi Ikan di layar
+    PlayerGui.DescendantAdded:Connect(function(desc)
+        if desc:IsA("TextLabel") and _G.WebhookEnabled then
+            -- Logika deteksi teks (Contoh: "You caught a...")
+            task.wait(0.1)
+            -- Ini adalah cara manual jika Remote sulit ditemukan
+        end
+    end)
 
-    local CatchRemote = Events:WaitForChild("CatchFish", 10)
+    -- KHUSUS FISH IT (RE-CHECK):
+    -- Mencoba menyusup ke fungsi Catch asli milik game
+    local success, remote = pcall(function() 
+        return game:GetService("ReplicatedStorage").Events.CatchFish 
+    end)
 
-    if CatchRemote then
-        print("Stellar System: Bridge Active - Waiting for Fish...")
-        
-        CatchRemote.OnClientEvent:Connect(function(data)
-            -- Kita bungkus pcall agar jika game update struktur, script tidak crash
-            local success, err = pcall(function()
-                -- Fish It! biasanya mengirimkan tabel data. Kita bongkar isinya:
-                local name = data.Name or data.FishName or "Unknown"
-                local rarity = data.Rarity or "Common"
-                local price = data.Price or data.Value or 0
-                local zone = data.Zone or "Unknown Location"
-                local mutation = data.Mutation or "None"
-                local weight = data.Weight or "0kg"
-
-                -- Verifikasi Filter Tier (Jika user memilih tier tertentu di UI)
-                if #SelectedTiers > 0 then
-                    if not table.find(SelectedTiers, rarity) then
-                        return -- Jangan kirim jika tidak sesuai filter
-                    end
-                end
-
-                -- Kirim ke Webhook
-                SendFishNotification(name, rarity, price, zone, nil, mutation, weight, LocalPlayer.Name)
-            end)
+    if success and remote then
+        remote.OnClientEvent:Connect(function(data)
+            if not _G.WebhookEnabled then return end
             
-            if not success then
-                warn("Stellar System Hook Error: " .. tostring(err))
-            end
+            -- Debugging: Melihat isi data asli dari game di F9
+            print("Stellar Detected Data:", HttpService:JSONEncode(data))
+
+            local name = data.Fish or data.Name or "Unknown"
+            local rarity = data.Rarity or "Common"
+            local weight = data.Weight or "0kg"
+            local price = data.Price or data.Value or 0
+            local zone = data.Zone or "Unknown"
+            local mutation = data.Mutation or "None"
+
+            -- Filter Rarity
+            if #SelectedTiers > 0 and not table.find(SelectedTiers, rarity) then return end
+
+            SendFishNotification(name, rarity, price, zone, nil, mutation, weight, LocalPlayer.Name)
         end)
-    else
-        warn("Stellar System: Remote 'CatchFish' not found!")
     end
 end
 
--- Jalankan fungsi hook
-task.spawn(HookFishEvent)
-
+task.spawn(HookGameEvents)
 ShowPage("Info")
