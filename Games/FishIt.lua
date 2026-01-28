@@ -250,7 +250,7 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
     local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
     
-    -- 1. DATABASE GAMBAR (Berdasarkan list file GitHub kamu sebelumnya)
+    -- DATABASE CHECK (Sesuai aset di GitHub kamu)
     local hasImage = {
         ["Blob Shark"] = true, ["Cryoshade Glider"] = true, ["Cursed Kraken"] = true,
         ["Elpirate Gran Maja"] = true, ["Elshark Gran Maja"] = true, ["Frostborn Shark"] = true,
@@ -260,45 +260,31 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
         ["Skeleton Narwhal"] = true, ["Viridis Lurker"] = true, ["Worm Fish"] = true
     }
 
-    -- 2. DATABASE WARNA RARITY (Berdasarkan 7 Rarity di Wiki)
-    local rarityColors = {
-        ["Common"] = 16777215,    -- Putih
-        ["Uncommon"] = 65280,      -- Hijau
-        ["Rare"] = 255,           -- Biru
-        ["Epic"] = 10040319,      -- Ungu
-        ["Legendary"] = 16753920, -- Oranye
-        ["Mythic"] = 16711680,    -- Merah
-        ["Secret"] = 16723110     -- Pink Stellar (Warna Khusus Secret/Stellar)
-    }
-
-    -- Gunakan Pink Stellar (16723110) sebagai warna utama jika rarity tidak terdaftar
-    local finalColor = rarityColors[rarity] or 16723110
-
-    -- 3. LOGIKA THUMBNAIL
+    -- Logika Thumbnail Pojok Kanan Atas
     local thumbnailURL = stellarLogo
     if hasImage[name] then
         thumbnailURL = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
     end
-
-    -- 4. LOGIKA MUTATION (Agar baris tidak hilang)
-    local mutationText = (mutation == "" or mutation == nil) and "None" or tostring(mutation)
 
     local data = {
         ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. tostring(rarity) .. " Catch!",
             ["description"] = "Congratulations!! **" .. tostring(user) .. "** You have obtained a new **" .. tostring(rarity) .. "** fish!",
-            ["color"] = finalColor,
+            ["color"] = 16723110, -- Pink Stellar
             ["fields"] = {
                 {["name"] = "〢Fish Name", ["value"] = "```" .. tostring(name) .. "```", ["inline"] = false},
                 {["name"] = "〢Fish Tier", ["value"] = "```" .. tostring(rarity) .. "```", ["inline"] = true},
                 {["name"] = "〢Weight", ["value"] = "```" .. tostring(weight) .. "```", ["inline"] = true},
-                {["name"] = "〢Mutation", ["value"] = "```" .. mutationText .. "```", ["inline"] = true},
+                {["name"] = "〢Mutation", ["value"] = "```" .. (mutation ~= "" and tostring(mutation) or "None") .. "```", ["inline"] = true},
                 {["name"] = "〢Value", ["value"] = "```$" .. tostring(price) .. "```", ["inline"] = true},
                 {["name"] = "〢Zone", ["value"] = "```" .. tostring(zone) .. "```", ["inline"] = false}
             },
-            ["footer"] = { ["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = stellarLogo },
-            ["thumbnail"] = { ["url"] = thumbnailURL }, 
+            ["footer"] = { 
+                ["text"] = "Stellar System • Luc Aetheryn", 
+                ["icon_url"] = stellarLogo -- Logo Stellar tetap ada di bawah
+            },
+            ["thumbnail"] = { ["url"] = thumbnailURL }, -- Gambar ikan atau Logo Stellar di pojok kanan atas
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
