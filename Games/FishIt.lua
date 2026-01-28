@@ -100,8 +100,6 @@ AddInfoRow("Last Update", "Jan 28, 2026", 110)
 local function AddDesc(txt, y)
     local d = Instance.new("TextLabel", InfoPage); d.Text = txt; d.Size = UDim2.new(0.9, 0, 0, 0); d.Position = UDim2.new(0.05, 0, 0, y); d.Font = Enum.Font.Gotham; d.TextColor3 = Color3.fromRGB(160, 160, 160); d.TextSize = 11; d.TextXAlignment = 0; d.BackgroundTransparency = 1; d.TextWrapped = true; d.AutomaticSize = Enum.AutomaticSize.Y
 end
-AddDesc("• Webhook: Auto-send fish catches to Discord.", 135)
-AddDesc("• Smart Detector: Identifies fish IDs into real names.", 160)
 
 -- DISCORD UI (RESTORED)
 local Line = Instance.new("Frame", InfoPage); Line.Position = UDim2.new(0.05, 0, 0, 195); Line.Size = UDim2.new(0.9, 0, 0, 3); Line.BorderSizePixel = 0; local G = Instance.new("UIGradient", Line); G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
