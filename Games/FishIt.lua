@@ -252,53 +252,57 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
 end
 
 -- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
+-- [[ 6. FISHING LOGIC & WEBHOOK SENDER - STELLAR CUSTOM STYLE ]]
 local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
     if not _G.WebhookEnabled then return end
     
-    -- Mengambil teks langsung dari objek UI saat fungsi dipanggil
     local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
     
-    -- Filter Tier (Case Insensitive Fix)
+    -- Filter Tier
     local currentFilter = _G.TierBtn and _G.TierBtn.Text or ""
     if currentFilter ~= "Select Options" and not currentFilter:lower():find(rarity:lower()) then 
         return 
     end
 
-    local embedColor = 16777215
-    local r = rarity:lower()
-    if r:find("legendary") then embedColor = 16761095
-    elseif r:find("mythic") then embedColor = 11342935
-    elseif r:find("secret") then embedColor = 16711820 
-    end
+    -- Warna Embed Pink Khas Stellar (255, 50, 150) -> 16723110
+    local stellarPink = 16723110
 
     local data = {
         ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
-            ["color"] = embedColor,
+            ["description"] = "Congratulations!! **" .. user .. "** You have obtained a new **" .. rarity .. "** fish!",
+            ["color"] = stellarPink,
             ["fields"] = {
-                {["name"] = "👤 Player", ["value"] = "```" .. user .. "```", ["inline"] = true},
-                {["name"] = "🐟 Fish", ["value"] = "```" .. name .. "```", ["inline"] = true},
-                {["name"] = "✨ Mutation", ["value"] = "```" .. mutation .. "```", ["inline"] = true},
-                {["name"] = "💎 Rarity", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
-                {["name"] = "⚖️ Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
-                {["name"] = "💰 Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
-                {["name"] = "📍 Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
+                {["name"] = "〢Fish Name", ["value"] = "```" .. name .. "```", ["inline"] = false},
+                {["name"] = "〢Fish Tier", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
+                {["name"] = "〢Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
+                {["name"] = "〢Mutation", ["value"] = "```" .. mutation .. "```", ["inline"] = true},
+                {["name"] = "〢Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
+                {["name"] = "〢Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
             },
-            ["footer"] = {["text"] = "Stellar System • Luc Aetheryn"},
+            ["footer"] = {
+                ["text"] = "Stellar System • Luc Aetheryn",
+                ["icon_url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg" -- Logo Stellar di Footer
+            },
+            ["thumbnail"] = {
+                ["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg" -- Logo Stellar di Pojok Kanan
+            },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
 
-    pcall(function()
-        (request or http_request or syn.request)({
+    local success, err = pcall(function()
+        return (request or http_request or syn.request)({
             Url = url,
             Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode(data)
         })
     end)
+    
+    if not success then warn("Gagal mengirim webhook: " .. tostring(err)) end
 end
 
 -- [[ 7. UNIVERSAL DETECTOR - ULTRA SENSITIVE MODE ]]
