@@ -7,6 +7,9 @@ local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local SelectedTiers = {} -- WAJIB ADA DI ATAS
+_G.WebhookEnabled = false -- Inisialisasi awal agar tidak error
+
 
 -- [[ GITHUB ASSET HANDLER ]]
 local function GetStellarAsset(fileName, url)
@@ -183,7 +186,8 @@ AddWhFilter("Name Filter", 275, false)
 local function AddWhToggle(lbl, y)
     local F = Instance.new("Frame", WebhookPage); F.Size = UDim2.new(0.9, 0, 0, 35); F.Position = UDim2.new(0.05, 0, 0, y); F.BackgroundTransparency = 1
     local L = Instance.new("TextLabel", F)
-    L.Text = lbl; L.Size = UDim2.new(0.7, 0, 1, 0); L.Font = Enum.Font.GothamMedium; L.TextColor3 = Color3.fromRGB(200, 200, 200); L.TextSize = 15; L.TextXAlignment = 0; L.BackgroundTransparency = 1 -- TEKS DIPERBESAR
+    L.Text = lbl; L.Size = UDim2.new(0.7, 0, 1, 0); L.Font = Enum.Font.GothamMedium; L.TextColor3 = Color3.fromRGB(200, 200, 200)
+    L.TextSize = 15; L.TextXAlignment = 0; L.BackgroundTransparency = 1 -- SUDAH DIPERBESAR
     
     local BG = Instance.new("TextButton", F); BG.Size = UDim2.fromOffset(45, 22); BG.Position = UDim2.new(1, -45, 0.5, -11); BG.BackgroundColor3 = Color3.fromRGB(45, 45, 55); BG.Text = ""; Instance.new("UICorner", BG).CornerRadius = UDim.new(1, 0)
     local T = Instance.new("Frame", BG); T.Size = UDim2.fromOffset(18, 18); T.Position = UDim2.new(0, 2, 0.5, -9); T.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", T).CornerRadius = UDim.new(1, 0)
@@ -202,43 +206,29 @@ local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.ne
 
 TestBtn.MouseButton1Click:Connect(function()
     local url = WebhookURLBox.Text:gsub("%s+", "")
+    
     if url == "" or not url:find("discord") then
         TestBtn.Text = "Invalid Webhook URL!"
         task.wait(2)
         TestBtn.Text = "Test Webhook Connection"
-    else
-        TestBtn.Text = "Sending Test..."
-        -- Masukkan fungsi HTTP Post lu di sini
-        task.wait(1)
-        TestBtn.Text = "Connection Sent!"
-        task.wait(2)
-        TestBtn.Text = "Test Webhook Connection"
+        return
     end
-end)
 
-    -- URL Logo Stellar untuk Thumbnail di dalam kotak
+    TestBtn.Text = "Sending Test..."
     local stellarLogo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"
 
     local payload = HttpService:JSONEncode({
-        -- Username & Avatar dihapus agar menggunakan bawaan Discord
-        ["content"] = "Stellar System Test", 
         ["embeds"] = {{
             ["title"] = "✅ Connection Test Successful",
-            ["description"] = "Stellar System has been successfully linked to your Discord Webhook.",
-            ["color"] = 16723110, -- Pink Stellar
-            ["thumbnail"] = {
-                ["url"] = stellarLogo 
-            },
-            ["footer"] = {
-                ["text"] = "Stellar System",
-                ["icon_url"] = stellarLogo
-            },
+            ["description"] = "Stellar System has been successfully linked!",
+            ["color"] = 16723110,
+            ["footer"] = {["text"] = "Stellar System", ["icon_url"] = stellarLogo},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     })
 
-    local success, response = pcall(function()
-        return (request or http_request or syn.request)({
+    local success = pcall(function()
+        (request or http_request or syn.request)({
             Url = url,
             Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
@@ -246,12 +236,7 @@ end)
         })
     end)
 
-    if success then
-        TestBtn.Text = "Successfully Sent!"
-    else
-        TestBtn.Text = "Failed To Send"
-    end
-    
+    TestBtn.Text = success and "Successfully Sent!" or "Failed To Send"
     task.wait(2)
     TestBtn.Text = "Test Webhook Connection"
 end)
