@@ -119,9 +119,37 @@ local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.n
 local WebhookPage = CreatePage("Webhook", true)
 local WhTitle = Instance.new("TextLabel", WebhookPage); WhTitle.Text = "Webhook Settings"; WhTitle.Size = UDim2.new(1, 0, 0, 40); WhTitle.Font = Enum.Font.GothamBold; WhTitle.TextSize = 20; WhTitle.TextColor3 = Color3.new(1,1,1); WhTitle.BackgroundTransparency = 1
 local function AddInput(lbl, y, placeholder)
-    local L = Instance.new("TextLabel", WebhookPage); L.Text = lbl; L.Size = UDim2.new(0.9, 0, 0, 20); L.Position = UDim2.new(0.05, 0, 0, y); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1,1,1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
-    local I = Instance.new("TextBox", WebhookPage); I.Size = UDim2.new(0.9, 0, 0, 35); I.Position = UDim2.new(0.05, 0, 0, y+22); I.BackgroundColor3 = Color3.fromRGB(30, 30, 40); I.PlaceholderText = placeholder; I.Text = ""; I.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", I); return I
+    local L = Instance.new("TextLabel", WebhookPage)
+    L.Text = lbl
+    L.Size = UDim2.new(0.9, 0, 0, 20)
+    L.Position = UDim2.new(0.05, 0, 0, y)
+    L.Font = Enum.Font.Gotham
+    L.TextColor3 = Color3.new(1,1,1)
+    L.TextXAlignment = 0
+    L.BackgroundTransparency = 1
+
+    local I = Instance.new("TextBox", WebhookPage)
+    I.Size = UDim2.new(0.9, 0, 0, 35)
+    I.Position = UDim2.new(0.05, 0, 0, y+22)
+    I.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    I.PlaceholderText = placeholder
+    I.Text = ""
+    I.TextColor3 = Color3.new(1, 1, 1)
+    I.TextSize = 12 -- Ukuran teks sedikit diperkecil agar lebih rapi
+    I.ClipsDescendants = true -- MEMOTONG TEKS yang keluar dari kotak
+    I.ClearTextOnFocus = false
+    
+    -- Mencegah teks meluap secara horizontal
+    I.TextXAlignment = Enum.TextXAlignment.Left 
+    
+    local Padding = Instance.new("UIPadding", I)
+    Padding.PaddingLeft = UDim.new(0, 10)
+    Padding.PaddingRight = UDim.new(0, 10) -- Padding agar teks tidak menempel ke pinggir
+    
+    Instance.new("UICorner", I)
+    return I
 end
+
 local DiscordIDBox = AddInput("Input ID Discord", 50, "Input Here")
 local WebhookURLBox = AddInput("Webhook URL", 115, "Input Here")
 
