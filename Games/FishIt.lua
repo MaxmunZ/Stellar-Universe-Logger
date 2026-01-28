@@ -301,69 +301,56 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
--- [[ 7. UNIVERSAL DETECTOR - DEEP SCAN MODE ]]
-local function ForceScan(tab)
-    if type(tab) ~= "table" then return nil end
+-- [[ 7. UNIVERSAL DETECTOR - ULTRA SENSITIVE MODE ]]
+local function DeepCheck(data)
+    if type(data) ~= "table" then return end
     
-    -- Mencari kunci data yang umum digunakan di game fishing
-    local n = tab.Name or tab.FishName or tab.fish_name or tab.Id
-    local r = tab.Rarity or tab.Tier or tab.rarity_type or tab.Rank
-    local p = tab.Price or tab.Value or tab.SellValue or tab.price
-    local w = tab.Weight or tab.Lbs or tab.weight
-    local m = tab.Mutation or tab.Variant or tab.is_shiny
-    local z = tab.Zone or tab.Location or "Dynamic Zone"
-
-    -- Jika minimal ada Nama atau Rarity, kirim!
-    if n or r then
-        return {
-            Name = tostring(n or "Unknown"),
-            Rarity = tostring(r or "Common"),
-            Price = tostring(p or "0"),
-            Weight = tostring(w or "N/A"),
-            Mutation = tostring(m or "None"),
-            Zone = tostring(z)
-        }
+    -- Mencoba mencari pola data ikan dalam tabel apapun yang lewat
+    local fishName = data.Name or data.Fish or data.FishName or data.Id
+    local fishRarity = data.Rarity or data.Tier or data.RarityName or "Common"
+    
+    if fishName then
+        SendFishNotification(
+            tostring(fishName),
+            tostring(fishRarity),
+            tostring(data.Price or "0"),
+            tostring(data.Zone or "Unknown"),
+            "",
+            tostring(data.Mutation or "None"),
+            tostring(data.Weight or "0"),
+            game.Players.LocalPlayer.Name
+        )
+        return true
     end
-    return nil
+    return false
 end
 
--- Listener Utama
-for _, v in pairs(game:GetDescendants()) do
-    if v:IsA("RemoteEvent") then
-        v.OnClientEvent:Connect(function(...)
-            local args = {...}
-            for _, arg in pairs(args) do
-                if type(arg) == "table" then
-                    -- Cek tabel utama
-                    local found = ForceScan(arg)
-                    
-                    -- Jika tidak ketemu di utama, bongkar isinya satu-satu (Deep Scan)
-                    if not found then
-                        for _, sub in pairs(arg) do
-                            if type(sub) == "table" then
-                                found = ForceScan(sub)
-                                if found then break end
-                            end
-                        end
-                    end
-                    
-                    if found then
-                        SendFishNotification(
-                            found.Name, 
-                            found.Rarity, 
-                            found.Price, 
-                            found.Zone, 
-                            "", 
-                            found.Mutation, 
-                            found.Weight, 
-                            game.Players.LocalPlayer.Name
-                        )
+-- Memantau SEMUA RemoteEvent di dalam Game
+game:GetService("RunService").Heartbeat:Connect(function()
+    for _, remote in pairs(game:GetDescendants()) do
+        if remote:IsA("RemoteEvent") and not remote:GetAttribute("StellarHooked") then
+            remote:SetAttribute("StellarHooked", true)
+            
+            remote.OnClientEvent:Connect(function(...)
+                local args = {...}
+                for _, arg in pairs(args) do
+                    if type(arg) == "table" then
+                        DeepCheck(arg)
                     end
                 end
-            end
-        end)
+            end)
+        end
     end
-end
+end)
 
+-- Backup: Deteksi lewat UI (Jika RemoteEvent tidak terdeteksi)
+game.Players.LocalPlayer.PlayerGui.DescendantAdded:Connect(function(desc)
+    if desc:IsA("TextLabel") then
+        -- Jika ada tulisan "Caught" atau "Rare" muncul di layar
+        if desc.Text:find("Caught") or desc.Text:find("!") then
+            print("Deteksi aktivitas UI: " .. desc.Text)
+        end
+    end
+end)
 
 ShowPage("Info")
