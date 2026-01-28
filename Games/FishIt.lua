@@ -287,7 +287,7 @@ local function SendFishNotification(fishName, rarity, price, zone, img, mutation
     end)
 end
 
--- [[ 7. FINAL OPTIMIZED HOOK - MULTI-TIER FIX ]]
+-- [[ 7. FINAL REPAIR - ALL TIERS DETECTION ]]
 local function AutoHookFish()
     local RS = game:GetService("ReplicatedStorage")
     local CatchRemote = nil
@@ -299,56 +299,61 @@ local function AutoHookFish()
     end
 
     if CatchRemote then
+        print("⭐ Stellar System: Hook Active & Monitoring All Tiers")
         CatchRemote.OnClientEvent:Connect(function(...)
             local args = {...}
             if not _G.WebhookEnabled then return end
 
             local playerName = tostring(args[1])
-            local fishName = "Unknown"
             local rarity = "Common"
-            -- Pastikan daftar ini lengkap sesuai yang ada di game
+            local fishName = "Unknown"
             local validRarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
 
-            -- 1. Cari Rarity dan Nama Ikan secara dinamis
-            for i, v in ipairs(args) do
-                local valStr = tostring(v)
-                if table.find(validRarities, valStr) then
-                    rarity = valStr -- Menangkap tier yang ditemukan (bukan cuma Common)
-                    
-                    -- Mencari nama ikan di sekitar posisi Rarity
-                    if args[i-1] and type(args[i-1]) == "string" and args[i-1] ~= playerName then
-                        fishName = args[i-1]
-                    elseif args[i+1] and type(args[i+1]) == "string" and args[i+1] ~= playerName then
-                        fishName = args[i+1]
-                    end
+            -- 1. CARI RARITY DULU (Prioritas Utama)
+            for _, v in pairs(args) do
+                local s = tostring(v)
+                if table.find(validRarities, s) then
+                    rarity = s
+                    break
                 end
             end
 
-            -- 2. Logika Filter Tier (Penyebab hanya Common yang muncul)
-            -- Jika SelectedTiers tidak kosong, cek apakah rarity ikan terpilih
+            -- 2. CARI NAMA IKAN (Cari string yang bukan Player, bukan Rarity, dan bukan Zone)
+            for _, v in pairs(args) do
+                if type(v) == "string" 
+                   and v ~= playerName 
+                   and not table.find(validRarities, v) 
+                   and v ~= "None" 
+                   and not v:find("Zone") then
+                    fishName = v
+                    break
+                end
+            end
+
+            -- 3. LOGIKA FILTER (Penyebab Mythic tidak muncul biasanya di sini)
+            -- Jika menu pilihan Tier kosong, maka OTOMATIS kirim semua ikan.
             if #SelectedTiers > 0 then
                 local isSelected = false
-                for _, selectedTier in pairs(SelectedTiers) do
-                    if rarity == selectedTier then
-                        isSelected = true
-                        break
-                    end
+                for _, t in pairs(SelectedTiers) do
+                    if rarity == t then isSelected = true break end
                 end
-                -- Jika tier ikan (misal Mythic) tidak ada di daftar pilihan, jangan kirim
-                if not isSelected then return end 
+                if not isSelected then return end -- Skip jika tier tidak dicentang
             end
 
-            -- 3. Kirim data ke Bagian 6
-            SendFishNotification(
-                tostring(fishName), 
-                tostring(rarity), 
-                args[3] or 0, 
-                args[4] or "Unknown", 
-                nil, 
-                args[6] or "None", 
-                args[5] or "0kg", 
-                playerName
-            )
+            -- 4. KIRIM DATA (Pastikan urutan parameter sesuai Bagian 6)
+            -- SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
+            pcall(function()
+                SendFishNotification(
+                    tostring(fishName), 
+                    tostring(rarity), 
+                    args[3] or 0, 
+                    args[4] or "Main Ocean", 
+                    nil, 
+                    args[6] or "None", 
+                    args[5] or "0kg", 
+                    playerName
+                )
+            end)
         end)
     end
 end
