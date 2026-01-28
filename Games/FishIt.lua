@@ -251,7 +251,6 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. FISHING LOGIC & WEBHOOK SENDER - CUSTOM EMBED VERSION ]]
 -- [[ 6. FISHING LOGIC & WEBHOOK SENDER - STELLAR CUSTOM STYLE ]]
 local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
     if not _G.WebhookEnabled then return end
@@ -265,15 +264,29 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
         return 
     end
 
-    -- Warna Embed Pink Khas Stellar (255, 50, 150) -> 16723110
-    local stellarPink = 16723110
+    -- Warna Berdasarkan Rarity
+    local rarityColors = {
+        ["common"] = 12632256,    -- Abu-abu
+        ["uncommon"] = 3066993,   -- Hijau
+        ["rare"] = 3447003,       -- Biru
+        ["epic"] = 10181046,      -- Ungu
+        ["legendary"] = 15105570, -- Orange
+        ["mythic"] = 15539236,    -- Pink/Magenta
+        ["secret"] = 16711680     -- Merah (Khusus Secret)
+    }
+    local embedColor = rarityColors[rarity:lower()] or 16723110 -- Default Stellar Pink
+
+    -- Format URL Gambar (GitHub Assets)
+    -- Pastikan nama file di GitHub sama dengan nama ikan (contoh: Crystal Crab.png)
+    local fishImageUrl = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Fishes/" .. name:gsub(" ", "%%20") .. ".png"
+    local stellarLogo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"
 
     local data = {
         ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
             ["description"] = "Congratulations!! **" .. user .. "** You have obtained a new **" .. rarity .. "** fish!",
-            ["color"] = stellarPink,
+            ["color"] = embedColor,
             ["fields"] = {
                 {["name"] = "〢Fish Name", ["value"] = "```" .. name .. "```", ["inline"] = false},
                 {["name"] = "〢Fish Tier", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
@@ -284,25 +297,48 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
             },
             ["footer"] = {
                 ["text"] = "Stellar System • Luc Aetheryn",
-                ["icon_url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg" -- Logo Stellar di Footer
+                ["icon_url"] = stellarLogo
             },
             ["thumbnail"] = {
-                ["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg" -- Logo Stellar di Pojok Kanan
+                ["url"] = fishImageUrl -- Gambar ikan dari GitHub
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
 
-    local success, err = pcall(function()
-        return (request or http_request or syn.request)({
+    pcall(function()
+        (request or http_request or syn.request)({
             Url = url,
             Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode(data)
         })
     end)
+end
+
+-- [[ 7. SMART DETECTOR (Deep Scan) ]]
+local function ForceScan(tab)
+    if type(tab) ~= "table" then return nil end
     
-    if not success then warn("Gagal mengirim webhook: " .. tostring(err)) end
+    -- Menyesuaikan dengan kunci data dari database yang kamu berikan
+    local n = tab.Name or tab.Fish or tab.FishName or tab.Id
+    local r = tab.Rarity or tab.Tier or tab.Rank or "Common"
+    local w = tab.Weight or tab.Specs or "N/A"
+    local p = tab.Price or tab.Value or "0"
+    local m = tab.Mutation or tab.Variant or "None"
+    local z = tab.Location or tab.Zone or "Unknown"
+
+    if n then
+        return {
+            Name = tostring(n),
+            Rarity = tostring(r),
+            Price = tostring(p),
+            Weight = tostring(w),
+            Mutation = tostring(m),
+            Zone = tostring(z)
+        }
+    end
+    return nil
 end
 
 -- [[ 7. UNIVERSAL DETECTOR - ULTRA SENSITIVE MODE ]]
