@@ -81,57 +81,37 @@ local function CreatePage(name, scroll)
     Pages[name] = P; return P
 end
 
--- [[ INFO PAGE - REPLENISHED ]]
+-- [[ INFO PAGE - REPLENISHED & COMPACT ]]
 local InfoPage = CreatePage("Info", true)
-local HubTitle = Instance.new("TextLabel", InfoPage); HubTitle.Text = "-- Stellar System Hub --"; HubTitle.Size = UDim2.new(1, 0, 0, 45); HubTitle.Font = Enum.Font.GothamBold; HubTitle.TextSize = 18; HubTitle.TextColor3 = Color3.new(1, 1, 1); HubTitle.BackgroundTransparency = 1
+local HubTitle = Instance.new("TextLabel", InfoPage); HubTitle.Text = "-- Stellar System Hub --"; HubTitle.Size = UDim2.new(1, 0, 0, 45); HubTitle.Font = Enum.Font.GothamBold; HubTitle.TextSize = 16; HubTitle.TextColor3 = Color3.new(1, 1, 1); HubTitle.BackgroundTransparency = 1
 
 local function AddInfoRow(lbl, val, y)
-    local F = Instance.new("Frame", InfoPage); F.BackgroundTransparency = 1; F.Size = UDim2.new(0.9, 0, 0, 18); F.Position = UDim2.new(0.05, 0, 0, y)
-    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0, 85, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.fromRGB(220, 220, 220); L.TextXAlignment = 0; L.BackgroundTransparency = 1
-    local V = Instance.new("TextLabel", F); V.Text = ":  "..val; V.Position = UDim2.new(0, 85, 0, 0); V.Size = UDim2.new(1, -85, 1, 0); V.Font = Enum.Font.Gotham; V.TextColor3 = Color3.fromRGB(220, 220, 220); V.TextXAlignment = 0; V.BackgroundTransparency = 1
+    local F = Instance.new("Frame", InfoPage); F.BackgroundTransparency = 1; F.Size = UDim2.new(0.9, 0, 0, 16); F.Position = UDim2.new(0.05, 0, 0, y)
+    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0, 85, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.fromRGB(220, 220, 220); L.TextSize = 12; L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    local V = Instance.new("TextLabel", F); V.Text = ":  "..val; V.Position = UDim2.new(0, 85, 0, 0); V.Size = UDim2.new(1, -85, 1, 0); V.Font = Enum.Font.Gotham; V.TextColor3 = Color3.fromRGB(220, 220, 220); V.TextSize = 12; V.TextXAlignment = 0; V.BackgroundTransparency = 1
 end
 
-AddInfoRow("Version", "V1.0.0 [BETA]", 50)
-AddInfoRow("Owner", "Luc Aetheryn", 70)
-AddInfoRow("Status", "Undetected", 90)
-AddInfoRow("Last Update", "Jan 28, 2026", 110)
+-- Jarak Y antar baris dikurangi menjadi hanya selisih 18 unit agar rapat
+AddInfoRow("Version", "V1.0.0 [BETA]", 45)
+AddInfoRow("Owner", "Luc Aetheryn", 63)
+AddInfoRow("Status", "Undetected", 81)
+AddInfoRow("Last Update", "Jan 28, 2026", 99)
 
--- PENJELASAN FITUR (TAMBAHAN)
-local function AddDesc(txt, y)
-    local d = Instance.new("TextLabel", InfoPage); d.Text = txt; d.Size = UDim2.new(0.9, 0, 0, 0); d.Position = UDim2.new(0.05, 0, 0, y); d.Font = Enum.Font.Gotham; d.TextColor3 = Color3.fromRGB(160, 160, 160); d.TextSize = 11; d.TextXAlignment = 0; d.BackgroundTransparency = 1; d.TextWrapped = true; d.AutomaticSize = Enum.AutomaticSize.Y
-end
-
--- [[ DISCORD UI - COMPACT & FUNCTIONAL ]]
-local Line = Instance.new("Frame", InfoPage); Line.Position = UDim2.new(0.05, 0, 0, 130); Line.Size = UDim2.new(0.9, 0, 0, 3); Line.BorderSizePixel = 0; 
+-- [[ DISCORD UI - ADJUSTED POSITIONS ]]
+-- Garis dipindahkan ke 125 agar dekat dengan Last Update
+local Line = Instance.new("Frame", InfoPage); Line.Position = UDim2.new(0.05, 0, 0, 125); Line.Size = UDim2.new(0.9, 0, 0, 2); Line.BorderSizePixel = 0; 
 local G = Instance.new("UIGradient", Line); G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
 
-local DBox = Instance.new("Frame", InfoPage); DBox.Position = UDim2.new(0.05, 0, 0, 145); DBox.Size = UDim2.new(0.9, 0, 0, 60); DBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45); Instance.new("UICorner", DBox)
-local DIcon = Instance.new("ImageLabel", DBox); DIcon.Size = UDim2.fromOffset(40, 40); DIcon.Position = UDim2.new(0, 10, 0.5, -20); DIcon.Image = LogoDiscord; DIcon.BackgroundTransparency = 1; DIcon.ScaleType = Enum.ScaleType.Fit
-local DName = Instance.new("TextLabel", DBox); DName.Text = "Stellar Discord"; DName.Position = UDim2.new(0, 60, 0.2, 0); DName.Size = UDim2.new(1, -70, 0.4, 0); DName.Font = Enum.Font.GothamBold; DName.TextColor3 = Color3.new(1, 1, 1); DName.TextXAlignment = 0; DName.BackgroundTransparency = 1
-local DSub = Instance.new("TextLabel", DBox); DSub.Text = "Official Link Discord Server"; DSub.Position = UDim2.new(0, 60, 0.5, 0); DSub.Size = UDim2.new(1, -70, 0.4, 0); DSub.Font = Enum.Font.Gotham; DSub.TextColor3 = Color3.fromRGB(200, 200, 200); DSub.TextXAlignment = 0; DSub.BackgroundTransparency = 1
+-- Kotak Discord naik ke 135 agar sangat dekat dengan Line
+local DBox = Instance.new("Frame", InfoPage); DBox.Position = UDim2.new(0.05, 0, 0, 135); DBox.Size = UDim2.new(0.9, 0, 0, 50); DBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45); Instance.new("UICorner", DBox)
+local DIcon = Instance.new("ImageLabel", DBox); DIcon.Size = UDim2.fromOffset(30, 30); DIcon.Position = UDim2.new(0, 10, 0.5, -15); DIcon.Image = LogoDiscord; DIcon.BackgroundTransparency = 1; DIcon.ScaleType = Enum.ScaleType.Fit
 
-local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.new(0.05, 0, 0, 215); CopyBtn.Size = UDim2.new(0.9, 0, 0, 32); CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); CopyBtn.Text = "Copy Link Discord"; CopyBtn.Font = Enum.Font.Gotham; CopyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", CopyBtn)
+-- Penyesuaian Ukuran Teks: DName (14), DSub (11) agar tidak terlalu besar
+local DName = Instance.new("TextLabel", DBox); DName.Text = "Stellar Discord"; DName.Position = UDim2.new(0, 50, 0.2, 0); DName.Size = UDim2.new(1, -60, 0.4, 0); DName.Font = Enum.Font.GothamBold; DName.TextSize = 14; DName.TextColor3 = Color3.new(1, 1, 1); DName.TextXAlignment = 0; DName.BackgroundTransparency = 1
+local DSub = Instance.new("TextLabel", DBox); DSub.Text = "Official Link Discord Server"; DSub.Position = UDim2.new(0, 50, 0.5, 0); DSub.Size = UDim2.new(1, -60, 0.4, 0); DSub.Font = Enum.Font.Gotham; DSub.TextSize = 11; DSub.TextColor3 = Color3.fromRGB(180, 180, 180); DSub.TextXAlignment = 0; DSub.BackgroundTransparency = 1
 
--- [[ LOGIKA COPY LINK ]]
-CopyBtn.MouseButton1Click:Connect(function()
-    local link = "https://discord.gg/QEhHc6UBHH"
-    
-    -- Mencoba menyalin ke clipboard (Dukung semua executor)
-    if setclipboard then
-        setclipboard(link)
-    elseif toclipboard then
-        toclipboard(link)
-    end
-    
-    -- Efek Visual saat berhasil
-    CopyBtn.Text = "Link Copied to Clipboard!"
-    CopyBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 150) -- Berubah jadi pink sebentar
-    
-    task.wait(2)
-    
-    CopyBtn.Text = "Copy Link Discord"
-    CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-end)
+-- Tombol Copy naik ke 190
+local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.new(0.05, 0, 0, 190); CopyBtn.Size = UDim2.new(0.9, 0, 0, 30); CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); CopyBtn.Text = "Copy Link Discord"; CopyBtn.Font = Enum.Font.Gotham; CopyBtn.TextSize = 12; CopyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", CopyBtn)
 
 -- [[ WEBHOOK PAGE ]]
 local WebhookPage = CreatePage("Webhook", true)
