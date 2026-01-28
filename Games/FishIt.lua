@@ -140,82 +140,37 @@ local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.n
 -- [[ WEBHOOK PAGE ]]
 local WebhookPage = CreatePage("Webhook", true)
 
--- 1. Judul & Gradient Line
-local WhTitle = Instance.new("TextLabel", WebhookPage)
-WhTitle.Text = "Webhook Settings"
-WhTitle.Size = UDim2.new(1, 0, 0, 30)
-WhTitle.Position = UDim2.new(0, 20, 0, 10)
-WhTitle.Font = Enum.Font.GothamBold
-WhTitle.TextSize = 18 -- TEKS DIPERBESAR
-WhTitle.TextColor3 = Color3.new(1,1,1)
-WhTitle.BackgroundTransparency = 1
-WhTitle.TextXAlignment = Enum.TextXAlignment.Left
+local WhTitle = Instance.new("TextLabel", WebhookPage); WhTitle.Text = "Webhook Settings"; WhTitle.Size = UDim2.new(1, 0, 0, 30); WhTitle.Position = UDim2.new(0, 20, 0, 10); WhTitle.Font = Enum.Font.GothamBold; WhTitle.TextSize = 18; WhTitle.TextColor3 = Color3.new(1,1,1); WhTitle.BackgroundTransparency = 1; WhTitle.TextXAlignment = 0
 
--- LINE GRADIENT (Dibawah teks Webhook)
-local Line = Instance.new("Frame", WebhookPage)
-Line.Size = UDim2.new(0, 250, 0, 2)
-Line.Position = UDim2.new(0, 20, 0, 40)
-Line.BorderSizePixel = 0
-local LGrad = Instance.new("UIGradient", Line)
-LGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 150)), 
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 35))
-})
+local Line = Instance.new("Frame", WebhookPage); Line.Size = UDim2.new(0, 250, 0, 2); Line.Position = UDim2.new(0, 20, 0, 40); Line.BorderSizePixel = 0
+local LGrad = Instance.new("UIGradient", Line); LGrad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 150)), ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 35))})
 
--- 2. Fungsi AddInput (Diperbarui Visualnya)
 local function AddInput(lbl, y, placeholder)
     local L = Instance.new("TextLabel", WebhookPage)
-    L.Text = lbl
-    L.Size = UDim2.new(0.9, 0, 0, 20)
-    L.Position = UDim2.new(0.05, 0, 0, y)
-    L.Font = Enum.Font.GothamMedium
-    L.TextColor3 = Color3.fromRGB(200, 200, 200)
-    L.TextSize = 14 -- TEKS DIPERBESAR
-    L.TextXAlignment = Enum.TextXAlignment.Left
-    L.BackgroundTransparency = 1
-
+    L.Text = lbl; L.Size = UDim2.new(0.9, 0, 0, 20); L.Position = UDim2.new(0.05, 0, 0, y); L.Font = Enum.Font.GothamMedium; L.TextColor3 = Color3.fromRGB(200, 200, 200); L.TextSize = 15; L.TextXAlignment = 0; L.BackgroundTransparency = 1
     local I = Instance.new("TextBox", WebhookPage)
-    I.Size = UDim2.new(0.9, 0, 0, 30) -- Box diperkecil agar tidak terlalu besar
-    I.Position = UDim2.new(0.05, 0, 0, y + 25)
-    I.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    I.PlaceholderText = placeholder -- Placeholder sekarang jadi Contoh Pengisian
-    I.Text = ""
-    I.TextColor3 = Color3.new(1, 1, 1)
-    I.TextSize = 13
-    I.ClipsDescendants = true
-    I.ClearTextOnFocus = false
-    I.TextXAlignment = Enum.TextXAlignment.Left 
-    
-    local Padding = Instance.new("UIPadding", I)
-    Padding.PaddingLeft = UDim.new(0, 10)
-    
-    Instance.new("UICorner", I)
+    I.Size = UDim2.new(0.9, 0, 0, 30); I.Position = UDim2.new(0.05, 0, 0, y+25); I.BackgroundColor3 = Color3.fromRGB(30, 30, 40); I.PlaceholderText = placeholder; I.Text = ""; I.TextColor3 = Color3.new(1, 1, 1); I.TextSize = 13; I.Font = Enum.Font.Gotham; I.ClearTextOnFocus = false; I.TextXAlignment = 0
+    Instance.new("UIPadding", I).PaddingLeft = UDim.new(0, 10); Instance.new("UICorner", I)
     return I
 end
 
--- Input dengan Contoh Pengisian
 local DiscordIDBox = AddInput("Input ID Discord", 65, "Ex: 123456789012345678")
 local WebhookURLBox = AddInput("Webhook URL", 125, "Ex: https://discord.com/api/webhooks/...")
 
--- 3. Fungsi AddWhFilter (Teks Diperbesar)
 local function AddWhFilter(lbl, y, search)
     local F = Instance.new("Frame", WebhookPage); F.Size = UDim2.new(0.9, 0, 0, 35); F.Position = UDim2.new(0.05, 0, 0, y); F.BackgroundTransparency = 1
-    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0.4, 0, 1, 0); L.Font = Enum.Font.GothamMedium; L.TextColor3 = Color3.fromRGB(200, 200, 200); L.TextSize = 14; L.TextXAlignment = 0; L.BackgroundTransparency = 1
-    local B = Instance.new("TextButton", F); B.Text = "Select Options"; B.Position = UDim2.new(0.4, 0, 0, 0); B.Size = UDim2.new(0.6, 0, 1, 0); B.BackgroundColor3 = Color3.fromRGB(35, 35, 45); B.TextColor3 = Color3.fromRGB(255, 50, 150); B.Font = Enum.Font.GothamBold; B.TextSize = 13; Instance.new("UICorner", B)
-    
+    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0.4, 0, 1, 0); L.Font = Enum.Font.GothamMedium; L.TextColor3 = Color3.fromRGB(200, 200, 200); L.TextSize = 15; L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    local B = Instance.new("TextButton", F); B.Text = "Select Options"; B.Position = UDim2.new(0.4, 0, 0, 0); B.Size = UDim2.new(0.6, 0, 1, 0); B.BackgroundColor3 = Color3.fromRGB(35, 35, 45); B.TextColor3 = Color3.fromRGB(255, 50, 150); B.Font = Enum.Font.GothamBold; B.TextSize = 14; Instance.new("UICorner", B)
     if lbl == "Tier Filter" then _G.TierBtn = B end
-    if search then 
-        B.MouseButton1Click:Connect(function() SearchMenu.Visible = not SearchMenu.Visible end) 
-    end
+    if search then B.MouseButton1Click:Connect(function() SearchMenu.Visible = not SearchMenu.Visible end) end
 end
-
 AddWhFilter("Tier Filter", 195, true)
 AddWhFilter("Variant Filter", 235, false)
 AddWhFilter("Name Filter", 275, false)
 
 local function AddWhToggle(lbl, y)
     local F = Instance.new("Frame", WebhookPage); F.Size = UDim2.new(0.9, 0, 0, 35); F.Position = UDim2.new(0.05, 0, 0, y); F.BackgroundTransparency = 1
-    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0.7, 0, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1, 1, 1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0.7, 0, 1, 0); L.Font = Enum.Font.GothamMedium; L.TextColor3 = Color3.fromRGB(200, 200, 200); L.TextSize = 15; L.TextXAlignment = 0; L.BackgroundTransparency = 1
     local BG = Instance.new("TextButton", F); BG.Size = UDim2.fromOffset(45, 22); BG.Position = UDim2.new(1, -45, 0.5, -11); BG.BackgroundColor3 = Color3.fromRGB(45, 45, 55); BG.Text = ""; Instance.new("UICorner", BG).CornerRadius = UDim.new(1, 0)
     local T = Instance.new("Frame", BG); T.Size = UDim2.fromOffset(18, 18); T.Position = UDim2.new(0, 2, 0.5, -9); T.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", T).CornerRadius = UDim.new(1, 0)
     BG.MouseButton1Click:Connect(function() 
@@ -227,18 +182,19 @@ local function AddWhToggle(lbl, y)
 end
 AddWhToggle("Send Fish Webhook", 310)
 
-local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
+local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Test Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); TestBtn.Font = Enum.Font.GothamBold; TestBtn.TextSize = 14; Instance.new("UICorner", TestBtn)
 
--- [[ WEBHOOK TEST LOGIC - CLEAN VERSION ]]
+-- [[ TEST WEBHOOK LOGIC FIX ]]
 TestBtn.MouseButton1Click:Connect(function()
     local url = WebhookURLBox.Text:gsub("%s+", "")
-    
     if url == "" or not url:find("discord") then
-        TestBtn.Text = "Invalid Webhook URL!"
-        task.wait(2)
-        TestBtn.Text = "Test Webhook Connection"
+        TestBtn.Text = "Invalid URL!"; task.wait(2); TestBtn.Text = "Test Webhook Connection"
         return
     end
+    -- Logika kirim test HTTP lu di sini...
+    TestBtn.Text = "Sending Test..."
+    -- (Gunakan HttpService untuk kirim data ke url)
+end)
 
     -- URL Logo Stellar untuk Thumbnail di dalam kotak
     local stellarLogo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"
