@@ -332,4 +332,27 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
     end)
 end
 
+-- [[ 7. BRIDGE TO GAME LOGIC ]]
+-- Bagian ini menghubungkan script kamu ke event penangkapan ikan di game Fish It!
+local function HookFishEvent()
+    local Remote = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("CatchFish") -- Pastikan nama RemoteEvent ini benar sesuai game
+
+    Remote.OnClientEvent:Connect(function(fishData)
+        -- Mengambil data dari argument yang dikirim game
+        -- Catatan: Nama variabel di bawah (fishData.Name, dll) harus sesuai dengan struktur data game
+        local name = fishData.Name or "Unknown"
+        local rarity = fishData.Rarity or "Common"
+        local price = fishData.Price or 0
+        local zone = fishData.Zone or "Unknown"
+        local mutation = fishData.Mutation or "None"
+        local weight = fishData.Weight or "0kg"
+        
+        -- Memanggil fungsi notifikasi yang sudah kita buat tadi
+        SendFishNotification(name, rarity, price, zone, nil, mutation, weight, LocalPlayer.Name)
+    end)
+end
+
+-- Jalankan fungsi hook
+task.spawn(HookFishEvent)
+
 ShowPage("Info")
