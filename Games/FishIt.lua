@@ -36,87 +36,49 @@ MiniBtn.MouseButton1Click:Connect(function() Main.Visible = false; FloatBtn.Visi
 FloatBtn.MouseButton1Click:Connect(function() Main.Visible = true; FloatBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- [[ 2. SEARCH MENU (REVISED VISUAL & LOGIC) ]]
-local SearchMenu = Instance.new("ImageLabel", Main) -- Pastikan Parent ke Main biar nempel
+-- [[ 2. SEARCH MENU (POSITION FIX) ]]
+local SearchMenu = Instance.new("ImageLabel", Main)
 SearchMenu.Name = "TierSearchMenu"
 SearchMenu.Size = UDim2.new(0, 185, 0, 265) 
-SearchMenu.Position = UDim2.new(0, 180, 0, 45) -- Posisi di sisi kanan sidebar
+SearchMenu.Position = UDim2.new(0, 305, 0, 45) -- POSISI POJOK KANAN PANEL
 SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
--- Gunakan asset background lu biar seragam
 SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
 SearchMenu.ScaleType = Enum.ScaleType.Stretch
 SearchMenu.Visible = false
 SearchMenu.ZIndex = 1000
-SearchMenu.Active = true -- Penting agar klik tidak tembus ke bawah
+SearchMenu.Active = true
 
 local SStroke = Instance.new("UIStroke", SearchMenu)
 SStroke.Color = Color3.fromRGB(255, 50, 150)
 SStroke.Thickness = 1.5
 Instance.new("UICorner", SearchMenu)
 
--- Judul "Search"
+-- Judul & List (Sama seperti sebelumnya tapi ZIndex diperkuat)
 local STitle = Instance.new("TextLabel", SearchMenu)
-STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.new(1, 1, 1); STitle.Font = Enum.Font.GothamMedium; STitle.TextSize = 14; STitle.ZIndex = 1001
+STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.new(1, 1, 1); STitle.Font = Enum.Font.GothamMedium; STitle.TextSize = 16; STitle.ZIndex = 1001
 
 local SList = Instance.new("ScrollingFrame", SearchMenu)
 SList.Size = UDim2.new(1, -20, 1, -85); SList.Position = UDim2.new(0, 10, 0, 40); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0; SList.CanvasSize = UDim2.new(0, 0, 0, 260); SList.ZIndex = 1002
-
-local SLayout = Instance.new("UIListLayout", SList)
-SLayout.Padding = UDim.new(0, 4)
-
--- Variabel global lu (pastikan ini ada di paling atas script utama)
-local SelectedTiers = SelectedTiers or {}
+Instance.new("UIListLayout", SList).Padding = UDim.new(0, 4)
 
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
-    b.Name = t
-    b.Size = UDim2.new(1, 0, 0, 32); b.Text = "  " .. t; b.BackgroundTransparency = 0.7; b.BackgroundColor3 = Color3.fromRGB(20, 20, 20); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.TextXAlignment = Enum.TextXAlignment.Left; b.ZIndex = 1005
+    b.Size = UDim2.new(1, 0, 0, 32); b.Text = "  " .. t; b.BackgroundTransparency = 0.7; b.BackgroundColor3 = Color3.fromRGB(20, 20, 20); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.TextSize = 14; b.TextXAlignment = Enum.TextXAlignment.Left; b.ZIndex = 1005
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
-    
-    -- Efek Gradient Pas Dipilih
     local bGrad = Instance.new("UIGradient", b)
-    bGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 150)), 
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 20, 100))
-    })
+    bGrad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 150)), ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 20, 100))})
     bGrad.Enabled = false 
-
     b.MouseButton1Click:Connect(function()
-        local found = table.find(SelectedTiers, t)
-        if found then
-            table.remove(SelectedTiers, found)
-            bGrad.Enabled = false
-            b.BackgroundTransparency = 0.7
-            b.TextColor3 = Color3.fromRGB(200, 200, 200)
-        else
-            table.insert(SelectedTiers, t)
-            bGrad.Enabled = true
-            b.BackgroundTransparency = 0.1 -- Makin solid pas dipilih
-            b.TextColor3 = Color3.new(1, 1, 1)
-        end
-        
-        -- Update Teks di Button Luar
-        if _G.TierBtn then 
-            _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") 
-        end
+        local f = table.find(SelectedTiers, t)
+        if f then table.remove(SelectedTiers, f); bGrad.Enabled = false; b.BackgroundTransparency = 0.7; b.TextColor3 = Color3.fromRGB(200, 200, 200)
+        else table.insert(SelectedTiers, t); bGrad.Enabled = true; b.BackgroundTransparency = 0.1; b.TextColor3 = Color3.new(1, 1, 1) end
+        if _G.TierBtn then _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") end
     end)
 end
 
--- Tombol DONE
-local CloseSearch = Instance.new("TextButton", SearchMenu)
-CloseSearch.Size = UDim2.new(0.8, 0, 0, 30)
-CloseSearch.Position = UDim2.new(0.1, 0, 1, -40)
-CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150)
-CloseSearch.Text = "DONE"
-CloseSearch.Font = Enum.Font.GothamBold; CloseSearch.TextSize = 13; CloseSearch.TextColor3 = Color3.new(1, 1, 1); CloseSearch.ZIndex = 1010
-Instance.new("UICorner", CloseSearch)
+local CloseSearch = Instance.new("TextButton", SearchMenu); CloseSearch.Size = UDim2.new(0.8, 0, 0, 30); CloseSearch.Position = UDim2.new(0.1, 0, 1, -40); CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150); CloseSearch.Text = "DONE"; CloseSearch.Font = Enum.Font.GothamBold; CloseSearch.TextSize = 14; CloseSearch.TextColor3 = Color3.new(1, 1, 1); CloseSearch.ZIndex = 1010; Instance.new("UICorner", CloseSearch)
+CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
 
-local cGrad = Instance.new("UIGradient", CloseSearch)
-cGrad.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(180, 20, 120))
-
-CloseSearch.MouseButton1Click:Connect(function() 
-    SearchMenu.Visible = false 
-end)
 
 -- [[ 3. HEADER & SIDEBAR ]]
 local Header = Instance.new("Frame", Main); Header.Size = UDim2.new(1, -90, 0, 40); Header.BackgroundTransparency = 1
