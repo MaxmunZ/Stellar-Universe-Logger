@@ -1,10 +1,12 @@
 -- [[ STELLAR SYSTEM FINAL UI - REVISED VERSION ]]
 -- Developer: Luc Aetheryn
--- Fix: Webhook Test Functionality for Executors
+-- Current Date: Jan 28, 2026
 
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 -- [[ GITHUB ASSET HANDLER ]]
 local function GetStellarAsset(fileName, url)
@@ -24,26 +26,15 @@ local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "StellarFinal"
 ScreenGui.ResetOnSpawn = false
 
--- [[ 1. SEARCH MENU (FLOATING) ]]
+-- [[ 1. SEARCH MENU ]]
 local SearchMenu = Instance.new("Frame", ScreenGui)
-SearchMenu.Size = UDim2.fromOffset(180, 240); SearchMenu.Position = UDim2.new(0.5, 260, 0.5, -120)
-SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45); SearchMenu.Visible = false
-local SStroke = Instance.new("UIStroke", SearchMenu); SStroke.Color = Color3.fromRGB(255, 50, 150); SStroke.Thickness = 2
-Instance.new("UICorner", SearchMenu)
-
-local SList = Instance.new("ScrollingFrame", SearchMenu); SList.Size = UDim2.new(1, 0, 1, -10); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0
-Instance.new("UIListLayout", SList)
+SearchMenu.Size = UDim2.fromOffset(180, 240); SearchMenu.Position = UDim2.new(0.5, 260, 0.5, -120); SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45); SearchMenu.Visible = false
+local SStroke = Instance.new("UIStroke", SearchMenu); SStroke.Color = Color3.fromRGB(255, 50, 150); SStroke.Thickness = 2; Instance.new("UICorner", SearchMenu)
+local SList = Instance.new("ScrollingFrame", SearchMenu); SList.Size = UDim2.new(1, 0, 1, -10); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0; Instance.new("UIListLayout", SList)
 local SelectedTiers = {}
 
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
-    local b = Instance.new("TextButton", SList)
-    b.Size = UDim2.new(1, 0, 0, 30)
-    b.Text = t
-    b.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-    b.TextColor3 = Color3.fromRGB(200, 200, 200)
-    b.Font = Enum.Font.Gotham
-    b.BorderSizePixel = 0
-    
+    local b = Instance.new("TextButton", SList); b.Size = UDim2.new(1, 0, 0, 30); b.Text = t; b.BackgroundColor3 = Color3.fromRGB(35, 35, 45); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.BorderSizePixel = 0
     b.MouseButton1Click:Connect(function()
         if table.find(SelectedTiers, t) then
             for i, v in ipairs(SelectedTiers) do if v == t then table.remove(SelectedTiers, i) end end
@@ -52,71 +43,65 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
             table.insert(SelectedTiers, t)
             b.TextColor3 = Color3.fromRGB(255, 50, 150)
         end
-        if _G.TierBtn then
-            _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ")
-        end
+        if _G.TierBtn then _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") end
     end)
 end
-
-local CloseSearch = Instance.new("TextButton", SearchMenu)
-CloseSearch.Size = UDim2.new(1, 0, 0, 25); CloseSearch.Position = UDim2.new(0, 0, 1, 0); CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150); CloseSearch.Text = "Done"; CloseSearch.TextColor3 = Color3.new(1,1,1)
+local CloseSearch = Instance.new("TextButton", SearchMenu); CloseSearch.Size = UDim2.new(1, 0, 0, 25); CloseSearch.Position = UDim2.new(0, 0, 1, 0); CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150); CloseSearch.Text = "Done"; CloseSearch.TextColor3 = Color3.new(1,1,1)
 CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
 
--- [[ 2. MAIN FRAME & CONTROLS ]]
+-- [[ 2. MAIN FRAME ]]
 local FloatBtn = Instance.new("ImageButton", ScreenGui); FloatBtn.Size = UDim2.fromOffset(50, 50); FloatBtn.Position = UDim2.new(0.05, 0, 0.2, 0); FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35); FloatBtn.Image = LogoStellar; FloatBtn.Visible = false; FloatBtn.Active = true; FloatBtn.Draggable = true; Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
-
 local Main = Instance.new("Frame", ScreenGui); Main.Size = UDim2.fromOffset(500, 320); Main.Position = UDim2.new(0.5, -250, 0.5, -160); Main.BackgroundColor3 = Color3.fromRGB(25, 25, 35); Main.Active = true; Main.Draggable = true; Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
-
 local CloseBtn = Instance.new("TextButton", Main); CloseBtn.Text = "×"; CloseBtn.Size = UDim2.fromOffset(30, 30); CloseBtn.Position = UDim2.new(1, -40, 0, 5); CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80); CloseBtn.TextSize = 25; CloseBtn.Font = Enum.Font.GothamBold
 local MiniBtn = Instance.new("TextButton", Main); MiniBtn.Text = "−"; MiniBtn.Size = UDim2.fromOffset(30, 30); MiniBtn.Position = UDim2.new(1, -75, 0, 5); MiniBtn.BackgroundTransparency = 1; MiniBtn.TextColor3 = Color3.new(1, 1, 1); MiniBtn.TextSize = 25; MiniBtn.Font = Enum.Font.GothamBold
-
 MiniBtn.MouseButton1Click:Connect(function() Main.Visible = false; FloatBtn.Visible = true end)
 FloatBtn.MouseButton1Click:Connect(function() Main.Visible = true; FloatBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- [[ 3. HEADER & SIDEBAR ]]
+-- [[ 3. HEADER & CONTENT ]]
 local Header = Instance.new("Frame", Main); Header.Size = UDim2.new(1, -90, 0, 40); Header.BackgroundTransparency = 1
-local TitleLogo = Instance.new("ImageLabel", Header); TitleLogo.Size = UDim2.fromOffset(20, 20); TitleLogo.Position = UDim2.new(0, 12, 0.5, -10); TitleLogo.Image = LogoStellar; TitleLogo.BackgroundTransparency = 1; TitleLogo.ScaleType = Enum.ScaleType.Fit
 local Title = Instance.new("TextLabel", Header); Title.Text = "Stellar System | Fish It"; Title.Font = Enum.Font.GothamMedium; Title.TextColor3 = Color3.new(1, 1, 1); Title.TextSize = 15; Title.Position = UDim2.new(0, 40, 0, 0); Title.Size = UDim2.new(1, -40, 1, 0); Title.TextXAlignment = 0; Title.BackgroundTransparency = 1
-
 local Sidebar = Instance.new("Frame", Main); Sidebar.Position = UDim2.new(0, 10, 0, 50); Sidebar.Size = UDim2.new(0, 150, 1, -60); Sidebar.BackgroundTransparency = 1; Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 6)
-
--- [[ 4. CONTENT AREA & PAGE SYSTEM ]]
-local Content = Instance.new("Frame", Main); Content.Position = UDim2.new(0, 170, 0, 50); Content.Size = UDim2.new(1, -180, 1, -60); Content.BackgroundColor3 = Color3.fromRGB(20, 20, 28); Instance.new("UICorner", Content).CornerRadius = UDim.new(0, 6)
+local Content = Instance.new("Frame", Main); Content.Position = UDim2.new(0, 170, 0, 50); Content.Size = UDim2.new(1, -180, 1, -60); Content.BackgroundColor3 = Color3.fromRGB(20, 20, 28); Instance.new("UICorner", Content)
 
 local Pages = {}
 local TabButtons = {}
-
 local function CreatePage(name, scroll)
     local P = scroll and Instance.new("ScrollingFrame", Content) or Instance.new("Frame", Content)
     P.Size = UDim2.new(1, 0, 1, 0); P.BackgroundTransparency = 1; P.Visible = false
-    if scroll then P.ScrollBarThickness = 2; P.CanvasSize = UDim2.new(0, 0, 0, 550); P.ScrollBarImageColor3 = Color3.fromRGB(255, 50, 150) end
+    if scroll then P.ScrollBarThickness = 2; P.CanvasSize = UDim2.new(0, 0, 0, 600); P.ScrollBarImageColor3 = Color3.fromRGB(255, 50, 150) end
     Pages[name] = P; return P
 end
 
--- [[ INFO PAGE ]]
-local InfoPage = CreatePage("Info", false)
-local HubTitle = Instance.new("TextLabel", InfoPage); HubTitle.Text = "-- Stellar System Hub --"; HubTitle.Size = UDim2.new(1, 0, 0, 45); HubTitle.Font = Enum.Font.GothamBold; HubTitle.TextSize = 18; HubTitle.TextColor3 = Color3.new(1, 1, 1); HubTitle.BackgroundTransparency = 1
-
-local function AddInfoRow(lbl, val, y)
-    local F = Instance.new("Frame", InfoPage); F.BackgroundTransparency = 1; F.Size = UDim2.new(0.9, 0, 0, 18); F.Position = UDim2.new(0.05, 0, y, 0)
-    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0, 85, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.fromRGB(220, 220, 220); L.TextXAlignment = 0; L.BackgroundTransparency = 1
-    local V = Instance.new("TextLabel", F); V.Text = ":  "..val; V.Position = UDim2.new(0, 85, 0, 0); V.Size = UDim2.new(1, -85, 1, 0); V.Font = Enum.Font.Gotham; V.TextColor3 = Color3.fromRGB(220, 220, 220); V.TextXAlignment = 0; V.BackgroundTransparency = 1
+-- [[ INFO PAGE (LENGKAP) ]]
+local InfoPage = CreatePage("Info", true)
+local function AddDetail(txt, y, color)
+    local L = Instance.new("TextLabel", InfoPage); L.Text = txt; L.Size = UDim2.new(0.9, 0, 0, 20); L.Position = UDim2.new(0.05, 0, 0, y); L.Font = Enum.Font.Gotham; L.TextColor3 = color or Color3.new(1,1,1); L.TextSize = 12; L.TextXAlignment = 0; L.BackgroundTransparency = 1; L.TextWrapped = true; L.AutomaticSize = Enum.AutomaticSize.Y
 end
-AddInfoRow("Version", "V1.0.0 [BETA]", 0.22); AddInfoRow("Owner", "Luc Aetheryn", 0.29); AddInfoRow("Status", "Undetected", 0.36); AddInfoRow("Last Update", "Jan 27, 2026", 0.43)
 
--- WEBHOOK PAGE
+AddDetail("STELLAR SYSTEM HUB", 10, Color3.fromRGB(255, 50, 150))
+AddDetail("------------------------------------------", 30)
+AddDetail("• Version: V1.0.0 [BETA]", 50)
+AddDetail("• Developer: Luc Aetheryn", 70)
+AddDetail("• Last Update: Jan 28, 2026", 90)
+AddDetail("• Status: Undetected", 110)
+AddDetail("\nDESKRIPSI FITUR:", 140, Color3.fromRGB(255, 50, 150))
+AddDetail("- Webhook: Mengirim notifikasi tangkapan ke Discord.", 165)
+AddDetail("- Tier Filter: Memilih rarity ikan yang ingin dikirim.", 185)
+AddDetail("- Smart Detector: Mendeteksi ID Ikan & menerjemahkannya.", 205)
+AddDetail("\nCARA PENGGUNAAN:", 235, Color3.fromRGB(255, 50, 150))
+AddDetail("1. Copy Webhook URL dari Channel Discord Anda.", 260)
+AddDetail("2. Paste di Tab Webhook, lalu aktifkan Toggle.", 280)
+AddDetail("3. Pilih Tier yang diinginkan di Filter.", 300)
+
+-- [[ WEBHOOK PAGE ]]
 local WebhookPage = CreatePage("Webhook", true)
-local WhTitle = Instance.new("TextLabel", WebhookPage); WhTitle.Text = "Webhook Settings"; WhTitle.Size = UDim2.new(1, 0, 0, 40); WhTitle.Font = Enum.Font.GothamBold; WhTitle.TextSize = 20; WhTitle.TextColor3 = Color3.new(1,1,1); WhTitle.BackgroundTransparency = 1
-
 local function AddInput(lbl, y, placeholder)
     local L = Instance.new("TextLabel", WebhookPage); L.Text = lbl; L.Size = UDim2.new(0.9, 0, 0, 20); L.Position = UDim2.new(0.05, 0, 0, y); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.new(1,1,1); L.TextXAlignment = 0; L.BackgroundTransparency = 1
-    local I = Instance.new("TextBox", WebhookPage); I.Size = UDim2.new(0.9, 0, 0, 35); I.Position = UDim2.new(0.05, 0, 0, y+22); I.BackgroundColor3 = Color3.fromRGB(30, 30, 40); I.PlaceholderText = placeholder; I.Text = ""; I.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", I)
-    return I
+    local I = Instance.new("TextBox", WebhookPage); I.Size = UDim2.new(0.9, 0, 0, 35); I.Position = UDim2.new(0.05, 0, 0, y+22); I.BackgroundColor3 = Color3.fromRGB(30, 30, 40); I.PlaceholderText = placeholder; I.Text = ""; I.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", I); return I
 end
-
-local DiscordIDBox = AddInput("Input ID Discord", 50, "Input Here")
-local WebhookURLBox = AddInput("Webhook URL", 115, "Input Here")
+local DiscordIDBox = AddInput("Input ID Discord (Optional)", 20, "1234567890")
+local WebhookURLBox = AddInput("Webhook URL", 85, "https://discord.com/api/webhooks/...")
 
 local function AddWhFilter(lbl, y, search)
     local F = Instance.new("Frame", WebhookPage); F.Size = UDim2.new(0.9, 0, 0, 35); F.Position = UDim2.new(0.05, 0, 0, y); F.BackgroundTransparency = 1
@@ -125,10 +110,7 @@ local function AddWhFilter(lbl, y, search)
     if lbl == "Tier Filter" then _G.TierBtn = B end
     if search then B.MouseButton1Click:Connect(function() SearchMenu.Visible = not SearchMenu.Visible end) end
 end
-
-AddWhFilter("Tier Filter", 185, true)
-AddWhFilter("Variant Filter", 225, false)
-AddWhFilter("Name Filter", 265, false)
+AddWhFilter("Tier Filter", 155, true)
 
 local function AddWhToggle(lbl, y)
     local F = Instance.new("Frame", WebhookPage); F.Size = UDim2.new(0.9, 0, 0, 35); F.Position = UDim2.new(0.05, 0, 0, y); F.BackgroundTransparency = 1
@@ -142,80 +124,92 @@ local function AddWhToggle(lbl, y)
         if lbl == "Send Fish Webhook" then _G.WebhookEnabled = s end
     end)
 end
-AddWhToggle("Send Fish Webhook", 310)
+AddWhToggle("Send Fish Webhook", 210)
 
-local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 355); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
+local TestBtn = Instance.new("TextButton", WebhookPage); TestBtn.Size = UDim2.new(0.9, 0, 0, 35); TestBtn.Position = UDim2.new(0.05, 0, 0, 260); TestBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); TestBtn.Text = "Tests Webhook Connection"; TestBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", TestBtn)
 
--- [[ 5. TAB SYSTEM ]]
+-- [[ 4. LOGIC & TAB SYSTEM ]]
 local function ShowPage(name)
     for k, v in pairs(Pages) do v.Visible = (k == name) end
     for k, v in pairs(TabButtons) do v.BackgroundColor3 = (k == name) and Color3.fromRGB(255, 50, 150) or Color3.fromRGB(35, 35, 45) end
 end
-
-for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webhook", "Config"}) do
+for _, name in pairs({"Info", "Fishing", "Webhook", "Config"}) do
     if not Pages[name] then CreatePage(name, false) end
-    local B = Instance.new("TextButton", Sidebar); B.Size = UDim2.new(1, 0, 0, 32); B.BackgroundColor3 = Color3.fromRGB(35, 35, 45); B.Text = "|| " .. name; B.TextColor3 = Color3.fromRGB(200, 200, 200); B.Font = Enum.Font.Gotham; B.TextSize = 13; B.TextXAlignment = 0; Instance.new("UICorner", B).CornerRadius = UDim.new(0, 4); Instance.new("UIPadding", B).PaddingLeft = UDim.new(0, 10)
+    local B = Instance.new("TextButton", Sidebar); B.Size = UDim2.new(1, 0, 0, 32); B.BackgroundColor3 = Color3.fromRGB(35, 35, 45); B.Text = "|| " .. name; B.TextColor3 = Color3.fromRGB(200, 200, 200); B.Font = Enum.Font.Gotham; B.TextSize = 13; B.TextXAlignment = 0; Instance.new("UICorner", B); Instance.new("UIPadding", B).PaddingLeft = UDim.new(0, 10)
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. FIXED NOTIFICATION - STELLAR STYLE ]]
-local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
+-- [[ 5. WEBHOOK SENDER ]]
+local function SendFishNotification(name, rarity, price, zone, weight, user)
     if not _G.WebhookEnabled then return end
+    -- Filter Rarity
+    if #SelectedTiers > 0 and not table.find(SelectedTiers, rarity) then return end
+    
     local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
 
     local rarityColors = {["common"] = 12632256, ["uncommon"] = 3066993, ["rare"] = 3447003, ["epic"] = 10181046, ["legendary"] = 15105570, ["mythic"] = 15539236, ["secret"] = 16711680}
-    local embedColor = rarityColors[rarity:lower()] or 16723110
     local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
-    local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
-    local fishImageUrl = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
-
+    
     local data = {
         ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
             ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
             ["description"] = "Congratulations!! **" .. user .. "** You have obtained a new **" .. rarity .. "** fish!",
-            ["color"] = embedColor,
+            ["color"] = rarityColors[rarity:lower()] or 16723110,
             ["fields"] = {
                 {["name"] = "〢Fish Name", ["value"] = "```" .. name .. "```", ["inline"] = false},
                 {["name"] = "〢Fish Tier", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
                 {["name"] = "〢Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
-                {["name"] = "〢Mutation", ["value"] = "```" .. mutation .. "```", ["inline"] = true},
                 {["name"] = "〢Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
                 {["name"] = "〢Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
             },
-            ["footer"] = { ["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = stellarLogo },
-            ["thumbnail"] = { ["url"] = fishImageUrl },
+            ["footer"] = { ["text"] = "Stellar System • Luc Aetheryn", ["icon_url"] = mainRepo .. "Stellar%20System.png.jpg" },
+            ["thumbnail"] = { ["url"] = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png" },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
-    pcall(function()
-        (request or http_request or syn.request)({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(data) })
-    end)
+    pcall(function() (request or http_request or syn.request)({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(data) }) end)
 end
 
--- [[ 7. SMART TRANSLATOR & DETECTOR ]]
+-- [[ 6. SMART HOOK (THE MISSING LINK) ]]
+-- Ini adalah bagian yang mendeteksi saat kamu mendapatkan ikan
 local FishID_Map = { ["153"] = "Orca", ["1"] = "Azure Damsel", ["100"] = "Crystal Crab" }
 
-local function IsFishData(data)
-    if type(data) ~= "table" then return nil end
-    local rawName = data.DisplayName or data.FishName or data.Species or data.Name or data.Id
-    local rarity = data.Rarity or data.Tier or data.Rank or "Common"
-    local finalName = tostring(rawName)
-    if FishID_Map[finalName] then finalName = FishID_Map[finalName]
-    elseif tonumber(finalName) then
-        for k, v in pairs(data) do if type(v) == "string" and k ~= "Rarity" and k ~= "Tier" and not tonumber(v) then finalName = v break end end
-    end
-    return { Name = finalName, Rarity = tostring(rarity), Price = tostring(data.Price or data.Value or "0"), Weight = tostring(data.Weight or data.Lbs or "N/A"), Mutation = tostring(data.Mutation or data.Variant or "None"), Zone = tostring(data.Location or data.Zone or "Dynamic Zone") }
+local function ProcessFish(data)
+    local rawName = data.DisplayName or data.FishName or data.Name or data.Id or "Unknown"
+    local rarity = data.Rarity or data.Tier or "Common"
+    local finalName = FishID_Map[tostring(rawName)] or tostring(rawName)
+    
+    SendFishNotification(
+        finalName, 
+        rarity, 
+        data.Price or "0", 
+        data.Location or "Ocean", 
+        data.Weight or "N/A", 
+        LocalPlayer.Name
+    )
 end
 
--- [[ WEBHOOK TEST BUTTON FIX ]]
+-- [[ DETECTION HOOK ]]
+-- Kita scan RemoteEvents yang sering dipakai game fishing
+for _, v in pairs(game:GetDescendants()) do
+    if v:IsA("RemoteEvent") and (v.Name:find("Fish") or v.Name:find("Catch")) then
+        v.OnClientEvent:Connect(function(...)
+            local args = {...}
+            for _, arg in pairs(args) do
+                if type(arg) == "table" then ProcessFish(arg) end
+            end
+        end)
+    end
+end
+
+-- [[ WEBHOOK TEST BUTTON ]]
 TestBtn.MouseButton1Click:Connect(function()
     local url = WebhookURLBox.Text:gsub("%s+", "")
-    if url == "" or not url:find("discord") then TestBtn.Text = "Invalid Webhook URL!"; task.wait(2); TestBtn.Text = "Tests Webhook Connection"; return end
-    local payload = HttpService:JSONEncode({ ["content"] = DiscordIDBox.Text ~= "" and "Notification for <@"..DiscordIDBox.Text..">" or "Stellar System Test", ["embeds"] = {{ ["title"] = "✅ Connection Test Successful", ["description"] = "Stellar System has been successfully linked to your Discord Webhook.", ["color"] = 16723110, ["thumbnail"] = {["url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"}, ["footer"] = {["text"] = "Stellar System", ["icon_url"] = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"}, ["timestamp"] = DateTime.now():ToIsoDate() }} })
-    pcall(function() (request or http_request or syn.request)({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = payload }) end)
-    TestBtn.Text = "Successfully Sent!"; task.wait(2); TestBtn.Text = "Tests Webhook Connection"
+    if url == "" or not url:find("discord") then TestBtn.Text = "Invalid URL!"; task.wait(2); TestBtn.Text = "Tests Webhook Connection"; return end
+    pcall(function() (request or http_request or syn.request)({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode({["content"]="✅ Stellar System Connected!"}) }) end)
+    TestBtn.Text = "Sent!"; task.wait(2); TestBtn.Text = "Tests Webhook Connection"
 end)
 
 ShowPage("Info")
