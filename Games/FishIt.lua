@@ -73,26 +73,49 @@ local function CreatePage(name, scroll)
     Pages[name] = P; return P
 end
 
--- [[ INFO PAGE (LENGKAP) ]]
+-- [[ INFO PAGE - FULL VISUAL VERSION ]]
 local InfoPage = CreatePage("Info", true)
-local function AddDetail(txt, y, color)
-    local L = Instance.new("TextLabel", InfoPage); L.Text = txt; L.Size = UDim2.new(0.9, 0, 0, 20); L.Position = UDim2.new(0.05, 0, 0, y); L.Font = Enum.Font.Gotham; L.TextColor3 = color or Color3.new(1,1,1); L.TextSize = 12; L.TextXAlignment = 0; L.BackgroundTransparency = 1; L.TextWrapped = true; L.AutomaticSize = Enum.AutomaticSize.Y
+local HubTitle = Instance.new("TextLabel", InfoPage); HubTitle.Text = "-- Stellar System Hub --"; HubTitle.Size = UDim2.new(1, 0, 0, 45); HubTitle.Font = Enum.Font.GothamBold; HubTitle.TextSize = 18; HubTitle.TextColor3 = Color3.fromRGB(255, 50, 150); HubTitle.BackgroundTransparency = 1
+
+local function AddInfoRow(lbl, val, y)
+    local F = Instance.new("Frame", InfoPage); F.BackgroundTransparency = 1; F.Size = UDim2.new(0.9, 0, 0, 18); F.Position = UDim2.new(0.05, 0, 0, y)
+    local L = Instance.new("TextLabel", F); L.Text = lbl; L.Size = UDim2.new(0, 85, 1, 0); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.fromRGB(220, 220, 220); L.TextXAlignment = 0; L.BackgroundTransparency = 1
+    local V = Instance.new("TextLabel", F); V.Text = ":  "..val; V.Position = UDim2.new(0, 85, 0, 0); V.Size = UDim2.new(1, -85, 1, 0); V.Font = Enum.Font.Gotham; V.TextColor3 = Color3.fromRGB(220, 220, 220); V.TextXAlignment = 0; V.BackgroundTransparency = 1
 end
 
-AddDetail("STELLAR SYSTEM HUB", 10, Color3.fromRGB(255, 50, 150))
-AddDetail("------------------------------------------", 30)
-AddDetail("• Version: V1.0.0 [BETA]", 50)
-AddDetail("• Developer: Luc Aetheryn", 70)
-AddDetail("• Last Update: Jan 28, 2026", 90)
-AddDetail("• Status: Undetected", 110)
-AddDetail("\nDESKRIPSI FITUR:", 140, Color3.fromRGB(255, 50, 150))
-AddDetail("- Webhook: Mengirim notifikasi tangkapan ke Discord.", 165)
-AddDetail("- Tier Filter: Memilih rarity ikan yang ingin dikirim.", 185)
-AddDetail("- Smart Detector: Mendeteksi ID Ikan & menerjemahkannya.", 205)
-AddDetail("\nCARA PENGGUNAAN:", 235, Color3.fromRGB(255, 50, 150))
-AddDetail("1. Copy Webhook URL dari Channel Discord Anda.", 260)
-AddDetail("2. Paste di Tab Webhook, lalu aktifkan Toggle.", 280)
-AddDetail("3. Pilih Tier yang diinginkan di Filter.", 300)
+-- Info Dasar
+AddInfoRow("Version", "V1.0.0 [BETA]", 50)
+AddInfoRow("Owner", "Luc Aetheryn", 70)
+AddInfoRow("Status", "Undetected", 90)
+AddInfoRow("Last Update", "Jan 28, 2026", 110)
+
+-- [[ GRADASI LINE ]]
+local Line = Instance.new("Frame", InfoPage); Line.Position = UDim2.new(0.05, 0, 0, 140); Line.Size = UDim2.new(0.9, 0, 0, 3); Line.BorderSizePixel = 0; 
+local G = Instance.new("UIGradient", Line); G.Color = ColorSequence.new(Color3.fromRGB(255, 50, 150), Color3.fromRGB(120, 20, 150))
+
+-- [[ PENJELASAN TEKS ]]
+local function AddDesc(txt, y)
+    local L = Instance.new("TextLabel", InfoPage); L.Text = txt; L.Size = UDim2.new(0.9, 0, 0, 0); L.Position = UDim2.new(0.05, 0, 0, y); L.Font = Enum.Font.Gotham; L.TextColor3 = Color3.fromRGB(180, 180, 180); L.TextSize = 11; L.TextXAlignment = 0; L.BackgroundTransparency = 1; L.TextWrapped = true; L.AutomaticSize = Enum.AutomaticSize.Y
+end
+
+AddDesc("• Webhook: Mengirim data tangkapan secara otomatis ke Discord anda.", 155)
+AddDesc("• Smart Detector: Mengubah ID Ikan (seperti 153) menjadi nama asli secara otomatis.", 185)
+AddDesc("• Tier Filter: Hanya mengirim notifikasi untuk ikan yang anda pilih saja.", 215)
+
+-- [[ STELLAR DISCORD BOX ]]
+local DBox = Instance.new("Frame", InfoPage); DBox.Position = UDim2.new(0.05, 0, 0, 260); DBox.Size = UDim2.new(0.9, 0, 0, 60); DBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45); Instance.new("UICorner", DBox)
+local DIcon = Instance.new("ImageLabel", DBox); DIcon.Size = UDim2.fromOffset(40, 40); DIcon.Position = UDim2.new(0, 10, 0.5, -20); DIcon.Image = LogoDiscord; DIcon.BackgroundTransparency = 1; DIcon.ScaleType = Enum.ScaleType.Fit
+local DName = Instance.new("TextLabel", DBox); DName.Text = "Stellar Discord"; DName.Position = UDim2.new(0, 60, 0.2, 0); DName.Size = UDim2.new(1, -70, 0.4, 0); DName.Font = Enum.Font.GothamBold; DName.TextColor3 = Color3.new(1, 1, 1); DName.TextXAlignment = 0; DName.BackgroundTransparency = 1
+local DSub = Instance.new("TextLabel", DBox); DSub.Text = "Official Link Discord Server"; DSub.Position = UDim2.new(0, 60, 0.5, 0); DSub.Size = UDim2.new(1, -70, 0.4, 0); DSub.Font = Enum.Font.Gotham; DSub.TextColor3 = Color3.fromRGB(200, 200, 200); DSub.TextXAlignment = 0; DSub.BackgroundTransparency = 1
+
+-- [[ COPY BUTTON ]]
+local CopyBtn = Instance.new("TextButton", InfoPage); CopyBtn.Position = UDim2.new(0.05, 0, 0, 330); CopyBtn.Size = UDim2.new(0.9, 0, 0, 32); CopyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55); CopyBtn.Text = "Copy Link Discord"; CopyBtn.Font = Enum.Font.Gotham; CopyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", CopyBtn)
+CopyBtn.MouseButton1Click:Connect(function() 
+    setclipboard("https://discord.gg/QEhHc6UBHH")
+    CopyBtn.Text = "Copied to Clipboard!"
+    task.wait(2)
+    CopyBtn.Text = "Copy Link Discord" 
+end)
 
 -- [[ WEBHOOK PAGE ]]
 local WebhookPage = CreatePage("Webhook", true)
