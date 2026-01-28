@@ -26,41 +26,34 @@ local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "StellarFinal"
 ScreenGui.ResetOnSpawn = false
 
--- [[ 1. SEARCH MENU (FLOATING) ]]
-local SearchMenu = Instance.new("ImageLabel", Main) -- Parent diubah ke Main agar nempel di panel
+-- [[ 1. SEARCH MENU (INSIDE MAIN RIGHT SIDE) ]]
+-- Catatan: Pastikan variabel 'Main' sudah didefinisikan sebelum baris ini
+local SearchMenu = Instance.new("ImageLabel", Main) 
+SearchMenu.Name = "TierSearchMenu"
 SearchMenu.Size = UDim2.new(0, 180, 0, 240)
--- Posisinya disesuaikan agar menutupi area Content sebelah kanan
-SearchMenu.Position = UDim2.new(0, 310, 0, 50) 
+-- Posisinya diatur agar muncul di area Content (sebelah kanan sidebar)
+SearchMenu.Position = UDim2.new(0, 180, 0, 50) 
 SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
 SearchMenu.ScaleType = Enum.ScaleType.Stretch
 SearchMenu.Visible = false
-SearchMenu.ZIndex = 10 -- Agar muncul di atas elemen lain
+SearchMenu.ZIndex = 100 -- Supaya tidak tertutup elemen Page
 
 local SStroke = Instance.new("UIStroke", SearchMenu)
 SStroke.Color = Color3.fromRGB(255, 50, 150)
 SStroke.Thickness = 2
 Instance.new("UICorner", SearchMenu)
 
--- Judul "Search" di dalam menu
 local STitle = Instance.new("TextLabel", SearchMenu)
-STitle.Text = "Search"
-STitle.Size = UDim2.new(1, 0, 0, 30)
-STitle.BackgroundTransparency = 1
-STitle.TextColor3 = Color3.fromRGB(200, 200, 200)
-STitle.Font = Enum.Font.GothamMedium
-STitle.TextSize = 14
+STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 30); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.fromRGB(200, 200, 200); STitle.Font = Enum.Font.GothamMedium; STitle.ZIndex = 101
 
 local SList = Instance.new("ScrollingFrame", SearchMenu)
-SList.Size = UDim2.new(1, -10, 1, -40)
-SList.Position = UDim2.new(0, 5, 0, 35)
-SList.BackgroundTransparency = 1
-SList.ScrollBarThickness = 0
+SList.Size = UDim2.new(1, -10, 1, -70); SList.Position = UDim2.new(0, 5, 0, 35); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0; SList.ZIndex = 101
 Instance.new("UIListLayout", SList).Padding = UDim.new(0, 5)
 
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
-    b.Size = UDim2.new(1, 0, 0, 30); b.Text = t; b.BackgroundColor3 = Color3.fromRGB(35, 35, 45); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.BorderSizePixel = 0
+    b.Size = UDim2.new(1, 0, 0, 30); b.Text = t; b.BackgroundColor3 = Color3.fromRGB(45, 45, 55); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.ZIndex = 102; Instance.new("UICorner", b)
     b.MouseButton1Click:Connect(function()
         if table.find(SelectedTiers, t) then
             for i, v in ipairs(SelectedTiers) do if v == t then table.remove(SelectedTiers, i) end end
@@ -72,7 +65,8 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
         if _G.TierBtn then _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") end
     end)
 end
-local CloseSearch = Instance.new("TextButton", SearchMenu); CloseSearch.Size = UDim2.new(1, 0, 0, 25); CloseSearch.Position = UDim2.new(0, 0, 1, 0); CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150); CloseSearch.Text = "Done"; CloseSearch.TextColor3 = Color3.new(1,1,1)
+
+local CloseSearch = Instance.new("TextButton", SearchMenu); CloseSearch.Size = UDim2.new(0.9, 0, 0, 25); CloseSearch.Position = UDim2.new(0.05, 0, 1, -30); CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150); CloseSearch.Text = "Done"; CloseSearch.TextColor3 = Color3.new(1,1,1); CloseSearch.ZIndex = 105; Instance.new("UICorner", CloseSearch)
 CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
 
 -- [[ 2. MAIN FRAME & CONTROLS ]]
