@@ -187,7 +187,7 @@ TestBtn.MouseButton1Click:Connect(function()
     if url == "" or not url:find("discord") then
         TestBtn.Text = "Invalid Webhook URL!"
         task.wait(2)
-        TestBtn.Text = "Tests Webhook Connection"
+        TestBtn.Text = "Test Webhook Connection"
         return
     end
 
@@ -242,58 +242,58 @@ for _, name in pairs({"Info", "Fishing", "Automatically", "Menu", "Quest", "Webh
     TabButtons[name] = B; B.MouseButton1Click:Connect(function() ShowPage(name) end)
 end
 
--- [[ 6. NOTIFICATION REPAIR - FALLBACK THUMBNAIL & PINK COLOR ]]
+-- [[ 6. FINAL NOTIFICATION - LIST CHECKER & PINK VERSION ]]
 local function SendFishNotification(name, rarity, price, zone, img, mutation, weight, user)
     if not _G.WebhookEnabled then return end
     
     local url = WebhookURLBox.Text:gsub("%s+", "")
     if url == "" or not url:find("discord") then return end
 
-    -- Kunci Warna Pink Stellar (16723110) agar tidak putih lagi
-    local finalEmbedColor = 16723110 
-
-    -- Penanganan Mutation agar barisnya muncul
-    local mutationText = (mutation == "" or mutation == nil or mutation == "None") and "No Mutation" or mutation
-
     local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
     local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
     
-    -- Logika Gambar: Jika ada link 'img' dari game gunakan itu, jika tidak coba cari di GitHub.
-    -- Jika ikan 'Unknown', kita langsung arahkan ke Logo Stellar.
-    local fishImageUrl = stellarLogo
-    if name ~= "Unknown" then
-        fishImageUrl = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
+    -- List Ikan yang sudah ada gambarnya sesuai input kamu
+    local validFishes = {
+        ["Blob Shark"] = true, ["Cryoshade Glider"] = true, ["Cursed Kraken"] = true,
+        ["Elpirate Gran Maja"] = true, ["Elshark Gran Maja"] = true, ["Frostborn Shark"] = true,
+        ["Giant Squid"] = true, ["Gladiator Shark"] = true, ["Great Whale"] = true,
+        ["King Crab"] = true, ["Megalodon"] = true, ["Mosasaur Shark"] = true,
+        ["Panther Eel"] = true, ["Queen Crab"] = true, ["Ruby"] = true,
+        ["Skeleton Narwhal"] = true, ["Viridis Lurker"] = true, ["Worm Fish"] = true
+    }
+
+    -- Tentukan Thumbnail: Jika ada di list gunakan gambar ikan, jika tidak gunakan Logo Stellar
+    local thumbnailURL = stellarLogo
+    if validFishes[name] then
+        thumbnailURL = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
     end
 
     local data = {
         ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
         ["embeds"] = {{
-            ["title"] = "⭐ Stellar System | " .. rarity .. " Catch!",
-            ["description"] = "Congratulations!! **" .. user .. "** You have obtained a new **" .. rarity .. "** fish!",
-            ["color"] = finalEmbedColor,
+            ["title"] = "⭐ Stellar System | " .. tostring(rarity) .. " Catch!",
+            ["description"] = "Congratulations!! **" .. tostring(user) .. "** You have obtained a new **" .. tostring(rarity) .. "** fish!",
+            ["color"] = 16723110, -- PAKSA PINK STELLAR
             ["fields"] = {
-                {["name"] = "〢Fish Name", ["value"] = "```" .. name .. "```", ["inline"] = false},
-                {["name"] = "〢Fish Tier", ["value"] = "```" .. rarity .. "```", ["inline"] = true},
-                {["name"] = "〢Weight", ["value"] = "```" .. weight .. "```", ["inline"] = true},
-                {["name"] = "〢Mutation", ["value"] = "```" .. mutationText .. "```", ["inline"] = true},
-                {["name"] = "〢Value", ["value"] = "```$" .. price .. "```", ["inline"] = true},
-                {["name"] = "〢Zone", ["value"] = "```" .. zone .. "```", ["inline"] = false}
+                {["name"] = "〢Fish Name", ["value"] = "```" .. tostring(name) .. "```", ["inline"] = false},
+                {["name"] = "〢Fish Tier", ["value"] = "```" .. tostring(rarity) .. "```", ["inline"] = true},
+                {["name"] = "〢Weight", ["value"] = "```" .. tostring(weight) .. "```", ["inline"] = true},
+                {["name"] = "〢Mutation", ["value"] = "```" .. (mutation ~= "" and tostring(mutation) or "None") .. "```", ["inline"] = true},
+                {["name"] = "〢Value", ["value"] = "```$" .. tostring(price) .. "```", ["inline"] = true},
+                {["name"] = "〢Zone", ["value"] = "```" .. tostring(zone) .. "```", ["inline"] = false}
             },
             ["footer"] = { 
                 ["text"] = "Stellar System • Luc Aetheryn", 
                 ["icon_url"] = stellarLogo 
             },
-            ["thumbnail"] = { 
-                ["url"] = fishImageUrl -- Jika URL ini mati/404, Discord biasanya tidak menampilkan apa-apa.
-            }, 
+            ["thumbnail"] = { ["url"] = thumbnailURL }, 
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
     
     pcall(function()
         (request or http_request or syn.request)({
-            Url = url, 
-            Method = "POST",
+            Url = url, Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode(data)
         })
