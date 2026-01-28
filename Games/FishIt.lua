@@ -271,15 +271,18 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
         ["rare"] = 3447003,       -- Biru
         ["epic"] = 10181046,      -- Ungu
         ["legendary"] = 15105570, -- Orange
-        ["mythic"] = 15539236,    -- Pink/Magenta
-        ["secret"] = 16711680     -- Merah (Khusus Secret)
+        ["mythic"] = 15539236,    -- Pink/Mythic
+        ["secret"] = 16711680     -- Merah (Secret)
     }
-    local embedColor = rarityColors[rarity:lower()] or 16723110 -- Default Stellar Pink
+    local embedColor = rarityColors[rarity:lower()] or 16723110
 
-    -- Format URL Gambar (GitHub Assets)
-    -- Pastikan nama file di GitHub sama dengan nama ikan (contoh: Crystal Crab.png)
-    local fishImageUrl = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Fishes/" .. name:gsub(" ", "%%20") .. ".png"
-    local stellarLogo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20System.png.jpg"
+    -- Link Assets
+    local mainRepo = "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/"
+    local stellarLogo = mainRepo .. "Stellar%20System.png.jpg"
+    
+    -- Gambar Ikan (Mengambil dari folder /Fishes/)
+    -- Gunakan gsub untuk menangani spasi di nama ikan agar link valid
+    local fishImageUrl = mainRepo .. "Fishes/" .. name:gsub(" ", "%%20") .. ".png"
 
     local data = {
         ["content"] = DiscordIDBox.Text ~= "" and "🎣 **NEW CATCH!** <@"..DiscordIDBox.Text..">" or "🎣 **NEW CATCH!**",
@@ -300,7 +303,9 @@ local function SendFishNotification(name, rarity, price, zone, img, mutation, we
                 ["icon_url"] = stellarLogo
             },
             ["thumbnail"] = {
-                ["url"] = fishImageUrl -- Gambar ikan dari GitHub
+                -- Jika gambar ikan tidak ada, Discord akan mencoba memuat link ini. 
+                -- Kamu bisa menambahkan pcall jika ingin fallback yang lebih keras.
+                ["url"] = fishImageUrl 
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
