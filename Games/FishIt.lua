@@ -27,15 +27,27 @@ ScreenGui.Name = "StellarFinal"
 ScreenGui.ResetOnSpawn = false
 
 -- [[ 1. SEARCH MENU (FLOATING) ]]
-local SearchMenu = Instance.new("Frame", ScreenGui)
-SearchMenu.Size = UDim2.fromOffset(180, 240); SearchMenu.Position = UDim2.new(0.5, 260, 0.5, -120)
-SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45); SearchMenu.Visible = false
-local SStroke = Instance.new("UIStroke", SearchMenu); SStroke.Color = Color3.fromRGB(255, 50, 150); SStroke.Thickness = 2
+local SearchMenu = Instance.new("ImageLabel", ScreenGui) -- Diubah menjadi ImageLabel
+SearchMenu.Size = UDim2.fromOffset(180, 240)
+SearchMenu.Position = UDim2.new(0.5, 260, 0.5, -120)
+SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45) -- Fallback color
+SearchMenu.Visible = false
+SearchMenu.Active = true
+SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
+SearchMenu.ScaleType = Enum.ScaleType.Stretch -- Agar gambar menutupi seluruh kotak
+
+local SStroke = Instance.new("UIStroke", SearchMenu)
+SStroke.Color = Color3.fromRGB(255, 50, 150)
+SStroke.Thickness = 2
 Instance.new("UICorner", SearchMenu)
 
-local SList = Instance.new("ScrollingFrame", SearchMenu); SList.Size = UDim2.new(1, 0, 1, -10); SList.BackgroundTransparency = 1; SList.ScrollBarThickness = 0
-Instance.new("UIListLayout", SList)
-local SelectedTiers = {}
+-- ScrollingFrame dibuat transparan agar background terlihat
+local SList = Instance.new("ScrollingFrame", SearchMenu)
+SList.Size = UDim2.new(1, -10, 1, -40) -- Beri sedikit jarak agar tidak menutupi border
+SList.Position = UDim2.new(0, 5, 0, 5)
+SList.BackgroundTransparency = 1 
+SList.ScrollBarThickness = 0
+Instance.new("UIListLayout", SList).Padding = UDim.new(0, 5)
 
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
