@@ -36,24 +36,25 @@ MiniBtn.MouseButton1Click:Connect(function() Main.Visible = false; FloatBtn.Visi
 FloatBtn.MouseButton1Click:Connect(function() Main.Visible = true; FloatBtn.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- [[ 2. SEARCH MENU (REVISED CLICK LOGIC) ]]
--- Pastikan 'local SelectedTiers = {}' ada di baris paling atas script kamu!
-local SearchMenu = Instance.new("ImageLabel", Main) 
+-- [[ 2. SEARCH MENU (REVISED VISUAL & LOGIC) ]]
+local SearchMenu = Instance.new("ImageLabel", Main) -- Pastikan Parent ke Main biar nempel
 SearchMenu.Name = "TierSearchMenu"
 SearchMenu.Size = UDim2.new(0, 185, 0, 265) 
-SearchMenu.Position = UDim2.new(0, 180, 0, 45) 
+SearchMenu.Position = UDim2.new(0, 180, 0, 45) -- Posisi di sisi kanan sidebar
 SearchMenu.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+-- Gunakan asset background lu biar seragam
 SearchMenu.Image = GetStellarAsset("StellarBG_Vertical.png", "https://raw.githubusercontent.com/MaxmunZ/Stellar-Assets/main/Stellar%20Background%20Vertical.jpg")
 SearchMenu.ScaleType = Enum.ScaleType.Stretch
 SearchMenu.Visible = false
-SearchMenu.ZIndex = 1000 -- Dibikin paling tinggi agar tidak tertutup Content Page
-SearchMenu.Active = true
+SearchMenu.ZIndex = 1000
+SearchMenu.Active = true -- Penting agar klik tidak tembus ke bawah
 
 local SStroke = Instance.new("UIStroke", SearchMenu)
 SStroke.Color = Color3.fromRGB(255, 50, 150)
 SStroke.Thickness = 1.5
 Instance.new("UICorner", SearchMenu)
 
+-- Judul "Search"
 local STitle = Instance.new("TextLabel", SearchMenu)
 STitle.Text = "Search"; STitle.Size = UDim2.new(1, 0, 0, 35); STitle.BackgroundTransparency = 1; STitle.TextColor3 = Color3.new(1, 1, 1); STitle.Font = Enum.Font.GothamMedium; STitle.TextSize = 14; STitle.ZIndex = 1001
 
@@ -63,13 +64,16 @@ SList.Size = UDim2.new(1, -20, 1, -85); SList.Position = UDim2.new(0, 10, 0, 40)
 local SLayout = Instance.new("UIListLayout", SList)
 SLayout.Padding = UDim.new(0, 4)
 
+-- Variabel global lu (pastikan ini ada di paling atas script utama)
+local SelectedTiers = SelectedTiers or {}
+
 for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}) do
     local b = Instance.new("TextButton", SList)
     b.Name = t
     b.Size = UDim2.new(1, 0, 0, 32); b.Text = "  " .. t; b.BackgroundTransparency = 0.7; b.BackgroundColor3 = Color3.fromRGB(20, 20, 20); b.TextColor3 = Color3.fromRGB(200, 200, 200); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.TextXAlignment = Enum.TextXAlignment.Left; b.ZIndex = 1005
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
     
-    -- Efek Gradient
+    -- Efek Gradient Pas Dipilih
     local bGrad = Instance.new("UIGradient", b)
     bGrad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 150)), 
@@ -78,32 +82,27 @@ for _, t in pairs({"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", 
     bGrad.Enabled = false 
 
     b.MouseButton1Click:Connect(function()
-        -- Cek apakah data sudah ada di tabel
-        local foundIndex = nil
-        for i, v in ipairs(SelectedTiers) do
-            if v == t then foundIndex = i break end
-        end
-
-        if foundIndex then
-            table.remove(SelectedTiers, foundIndex)
+        local found = table.find(SelectedTiers, t)
+        if found then
+            table.remove(SelectedTiers, found)
             bGrad.Enabled = false
             b.BackgroundTransparency = 0.7
             b.TextColor3 = Color3.fromRGB(200, 200, 200)
         else
             table.insert(SelectedTiers, t)
             bGrad.Enabled = true
-            b.BackgroundTransparency = 0.1
+            b.BackgroundTransparency = 0.1 -- Makin solid pas dipilih
             b.TextColor3 = Color3.new(1, 1, 1)
         end
         
-        -- Update Teks di Button Luar (Webhook Page)
+        -- Update Teks di Button Luar
         if _G.TierBtn then 
             _G.TierBtn.Text = #SelectedTiers == 0 and "Select Options" or table.concat(SelectedTiers, ", ") 
         end
     end)
 end
 
--- Tombol DONE (Pastikan kelihatan dan bisa diklik)
+-- Tombol DONE
 local CloseSearch = Instance.new("TextButton", SearchMenu)
 CloseSearch.Size = UDim2.new(0.8, 0, 0, 30)
 CloseSearch.Position = UDim2.new(0.1, 0, 1, -40)
