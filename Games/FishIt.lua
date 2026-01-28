@@ -342,29 +342,42 @@ local function ForceScan(tab)
     return nil
 end
 
--- [[ 7. UNIVERSAL DETECTOR - ULTRA SENSITIVE MODE ]]
--- [[ 7. FIXED DETECTOR - NAME OVER ID ]]
+-- [[ 7. UNIVERSAL DETECTOR - ULTRA SENSITIVE MODE SMART TRANSLATOR & DETECTOR ]]
+local FishID_Map = {
+    ["153"] = "Orca", -- Contoh: Jika 153 muncul, ganti jadi Orca
+    ["1"] = "Azure Damsel",
+    ["100"] = "Crystal Crab",
+    -- Tambahkan ID lainnya di sini jika kamu menemukannya via Dex/F9
+}
+
 local function IsFishData(data)
     if type(data) ~= "table" then return nil end
     
-    -- URUTAN PENTING: Cari Nama/Species dulu, baru Id (nomor) sebagai cadangan terakhir
-    local n = data.FishName or data.Name or data.Species or data.Fish or data.Id
-    local r = data.Tier or data.Rarity or data.Rank or "Common"
-    
-    if n then
-        -- Jika n adalah nomor (Id), tapi ada data Species, gunakan Species
-        local finalName = tostring(n)
-        
-        return {
-            Name = finalName,
-            Rarity = tostring(r),
-            Price = tostring(data.Price or data.Value or "0"),
-            Weight = tostring(data.Weight or data.Lbs or "N/A"),
-            Mutation = tostring(data.Mutation or data.Variant or "None"),
-            Zone = tostring(data.Location or data.Zone or "Dynamic Zone")
-        }
+    local rawName = data.DisplayName or data.FishName or data.Species or data.Name or data.Id
+    local rarity = data.Rarity or data.Tier or data.Rank or "Common"
+    local finalName = tostring(rawName)
+
+    -- Jika nama yang didapat adalah angka, cek kamus kita
+    if FishID_Map[finalName] then
+        finalName = FishID_Map[finalName]
+    elseif tonumber(finalName) then
+        -- Jika angka tapi tidak ada di kamus, coba cari teks string lain di tabel data
+        for k, v in pairs(data) do
+            if type(v) == "string" and k ~= "Rarity" and k ~= "Tier" and not tonumber(v) then
+                finalName = v
+                break
+            end
+        end
     end
-    return nil
+    
+    return {
+        Name = finalName,
+        Rarity = tostring(rarity),
+        Price = tostring(data.Price or data.Value or "0"),
+        Weight = tostring(data.Weight or data.Lbs or "N/A"),
+        Mutation = tostring(data.Mutation or data.Variant or "None"),
+        Zone = tostring(data.Location or data.Zone or "Dynamic Zone")
+    }
 end
 
 -- Backup: Deteksi lewat UI (Jika RemoteEvent tidak terdeteksi)
