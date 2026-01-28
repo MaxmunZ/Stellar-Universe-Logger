@@ -26,8 +26,17 @@ local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "StellarFinal"
 ScreenGui.ResetOnSpawn = false
 
--- [[ 1. SEARCH MENU (INSIDE MAIN RIGHT SIDE) ]]
--- Catatan: Pastikan variabel 'Main' sudah didefinisikan sebelum baris ini
+-- [[ 1. MAIN FRAME & CONTROLS ]]
+local FloatBtn = Instance.new("ImageButton", ScreenGui); FloatBtn.Size = UDim2.fromOffset(50, 50); FloatBtn.Position = UDim2.new(0.05, 0, 0.2, 0); FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35); FloatBtn.Image = LogoStellar; FloatBtn.Visible = false; FloatBtn.Active = true; FloatBtn.Draggable = true; Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
+local Main = Instance.new("Frame", ScreenGui); Main.Size = UDim2.fromOffset(500, 320); Main.Position = UDim2.new(0.5, -250, 0.5, -160); Main.BackgroundColor3 = Color3.fromRGB(25, 25, 35); Main.Active = true; Main.Draggable = true; Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
+local CloseBtn = Instance.new("TextButton", Main); CloseBtn.Text = "×"; CloseBtn.Size = UDim2.fromOffset(30, 30); CloseBtn.Position = UDim2.new(1, -40, 0, 5); CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80); CloseBtn.TextSize = 25; CloseBtn.Font = Enum.Font.GothamBold
+local MiniBtn = Instance.new("TextButton", Main); MiniBtn.Text = "−"; MiniBtn.Size = UDim2.fromOffset(30, 30); MiniBtn.Position = UDim2.new(1, -75, 0, 5); MiniBtn.BackgroundTransparency = 1; MiniBtn.TextColor3 = Color3.new(1, 1, 1); MiniBtn.TextSize = 25; MiniBtn.Font = Enum.Font.GothamBold
+
+MiniBtn.MouseButton1Click:Connect(function() Main.Visible = false; FloatBtn.Visible = true end)
+FloatBtn.MouseButton1Click:Connect(function() Main.Visible = true; FloatBtn.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- [[ 2. SEARCH MENU (INSIDE MAIN RIGHT SIDE) ]] -- TARUH DI BAWAH MAIN
 local SearchMenu = Instance.new("ImageLabel", Main) 
 SearchMenu.Name = "TierSearchMenu"
 SearchMenu.Size = UDim2.new(0, 180, 0, 240)
@@ -68,16 +77,6 @@ end
 
 local CloseSearch = Instance.new("TextButton", SearchMenu); CloseSearch.Size = UDim2.new(0.9, 0, 0, 25); CloseSearch.Position = UDim2.new(0.05, 0, 1, -30); CloseSearch.BackgroundColor3 = Color3.fromRGB(255, 50, 150); CloseSearch.Text = "Done"; CloseSearch.TextColor3 = Color3.new(1,1,1); CloseSearch.ZIndex = 105; Instance.new("UICorner", CloseSearch)
 CloseSearch.MouseButton1Click:Connect(function() SearchMenu.Visible = false end)
-
--- [[ 2. MAIN FRAME & CONTROLS ]]
-local FloatBtn = Instance.new("ImageButton", ScreenGui); FloatBtn.Size = UDim2.fromOffset(50, 50); FloatBtn.Position = UDim2.new(0.05, 0, 0.2, 0); FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35); FloatBtn.Image = LogoStellar; FloatBtn.Visible = false; FloatBtn.Active = true; FloatBtn.Draggable = true; Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
-local Main = Instance.new("Frame", ScreenGui); Main.Size = UDim2.fromOffset(500, 320); Main.Position = UDim2.new(0.5, -250, 0.5, -160); Main.BackgroundColor3 = Color3.fromRGB(25, 25, 35); Main.Active = true; Main.Draggable = true; Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
-local CloseBtn = Instance.new("TextButton", Main); CloseBtn.Text = "×"; CloseBtn.Size = UDim2.fromOffset(30, 30); CloseBtn.Position = UDim2.new(1, -40, 0, 5); CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80); CloseBtn.TextSize = 25; CloseBtn.Font = Enum.Font.GothamBold
-local MiniBtn = Instance.new("TextButton", Main); MiniBtn.Text = "−"; MiniBtn.Size = UDim2.fromOffset(30, 30); MiniBtn.Position = UDim2.new(1, -75, 0, 5); MiniBtn.BackgroundTransparency = 1; MiniBtn.TextColor3 = Color3.new(1, 1, 1); MiniBtn.TextSize = 25; MiniBtn.Font = Enum.Font.GothamBold
-
-MiniBtn.MouseButton1Click:Connect(function() Main.Visible = false; FloatBtn.Visible = true end)
-FloatBtn.MouseButton1Click:Connect(function() Main.Visible = true; FloatBtn.Visible = false end)
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 -- [[ 3. HEADER & SIDEBAR ]]
 local Header = Instance.new("Frame", Main); Header.Size = UDim2.new(1, -90, 0, 40); Header.BackgroundTransparency = 1
