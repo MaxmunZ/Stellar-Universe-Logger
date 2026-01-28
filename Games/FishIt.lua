@@ -287,10 +287,11 @@ local function SendFishNotification(fishName, rarity, price, zone, img, mutation
     end)
 end
 
--- [[ 7. FIX HOOK - COMPLETE VERSION ]]
+-- [[ 7. SMART DETECTOR - ANTI UNKNOWN VERSION ]]
 local function AutoHookFish()
     local RS = game:GetService("ReplicatedStorage")
     local CatchRemote = nil
+    
     for _, v in pairs(RS:GetDescendants()) do
         if v:IsA("RemoteEvent") and (v.Name:find("Catch") or v.Name:find("Fish")) then
             CatchRemote = v; break
@@ -302,52 +303,59 @@ local function AutoHookFish()
             local args = {...}
             if not _G.WebhookEnabled then return end
 
+            -- Variabel Penampung Data
             local playerName = tostring(args[1])
-            local rarity = "Common" 
-            local fishName = "Unknown"
+            local rarity = "Common"
+            local fishName = "Unknown Fish"
+            local weight = "0kg"
+            local zone = "Unknown Zone"
+            local price = 0
+            local mutation = "None"
+            
             local validRarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"}
 
-            -- MENCARI RARITY (Penting: Overwrite variabel rarity)
-            for _, v in pairs(args) do
-                local valStr = tostring(v)
-                if table.find(validRarities, valStr) then
-                    rarity = valStr
-                    break
+            -- [[ LOOPING PENCARIAN PINTAR ]]
+            for i, v in ipairs(args) do
+                local s = tostring(v)
+                
+                -- 1. Cari Rarity
+                if table.find(validRarities, s) then
+                    rarity = s
+                
+                -- 2. Cari Berat (Biasanya ada teks "kg" atau "lb")
+                elseif s:find("kg") or s:find("lb") then
+                    weight = s
+                
+                -- 3. Cari Zone (Biasanya mengandung kata "Zone" atau "Ocean" atau "Sea")
+                elseif s:find("Zone") or s:find("Ocean") or s:find("Sea") or s:find("Depth") then
+                    zone = s
+                
+                -- 4. Cari Harga (Jika dia angka dan bukan argumen pertama)
+                elseif type(v) == "number" and i > 1 then
+                    price = v
+                
+                -- 5. Cari Nama Ikan (String yang bukan rarity, bukan zone, bukan player)
+                elseif type(v) == "string" and i > 1 
+                   and not table.find(validRarities, s) 
+                   and not s:find("kg") and not s:find("Zone") 
+                   and s ~= playerName and s ~= "None" then
+                    fishName = s
                 end
             end
 
-            -- MENCARI NAMA IKAN (String yang bukan Player, bukan Rarity, bukan None)
-            for _, v in pairs(args) do
-                if type(v) == "string" and v ~= playerName and not table.find(validRarities, v) and v ~= "None" and not v:find("Zone") then
-                    fishName = v
-                    break
-                end
-            end
-
-            -- FILTER TIER LOGIC
+            -- [[ FILTER TIER CHECK ]]
             if #SelectedTiers > 0 then
-                local found = false
+                local isMatch = false
                 for _, t in pairs(SelectedTiers) do
-                    if rarity == t then found = true break end
+                    if rarity:lower() == t:lower() then isMatch = true break end
                 end
-                if not found then return end
+                if not isMatch then return end
             end
 
-            -- PENGIRIMAN DATA
-            SendFishNotification(
-                tostring(fishName), 
-                tostring(rarity), 
-                args[3] or 0, 
-                args[4] or "Ocean", 
-                nil, 
-                args[6] or "None", 
-                args[5] or "0kg", 
-                playerName
-            )
+            -- [[ KIRIM KE WEBHOOK ]]
+            SendFishNotification(fishName, rarity, price, zone, nil, mutation, weight, playerName)
         end)
     end
 end
-
--- JALANKAN SISTEM
 task.spawn(AutoHookFish)
 ShowPage("Info")
